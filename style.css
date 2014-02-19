@@ -1,0 +1,16 @@
+* {
+    margin: 0; padding: 0;
+}
+.row {
+    margin-top: -5px;/* TODO FIX ME */
+}
+.tile {
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    background: #fff;
+    border: 1px solid #333;
+}
+.tile.blocked {
+    background: #000;
+}
