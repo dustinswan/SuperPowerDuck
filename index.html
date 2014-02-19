@@ -10,11 +10,16 @@
 </head>
 <body ng-app>
 
-<div ng-controller="BoardCtrl" ng-class="{timer: input_timer == 'off'}">
+<div ng-controller="BoardCtrl">
     <div ng-repeat="row in board" class="row">
         <div ng-repeat="cell in row track by $index" class="tile" ng-class="{blocked: cell == 0, duck: cell == 2}">
         </div>
     </div>
+
+    <div ng-bind="countdown" ng-show="countdown != 0"></div>
+    <span ng-repeat="d in directions track by $index">
+        {{ displayArrow(d) }}
+    </span>
 
 </div>
 

@@ -1,5 +1,4 @@
-// TIMES
-INPUT_TIMEOUT = 4000;
+INPUT_TIMEOUT = 5; // in seconds
 DUCK_SPEED = 500;
 
 BOARD_HEIGHT = 20;
@@ -11,11 +10,11 @@ RIGHT_KEY = 39;
 DOWN_KEY = 40;
 START_POSITION = { x: 0, y: 10 };
 
-
-function BoardCtrl($scope, $timeout) {
+function BoardCtrl($scope, $timeout, $interval) {
     $scope.board = [];
     $scope.duck_position = START_POSITION;
-    $scope.input_timer = "off";
+    $scope.directions = [];
+    $scope.move_count = 0;
 
     $scope.generateBoard = function () {
         for ( var i = 0; i < window.BOARD_HEIGHT; i++ ) {
@@ -40,7 +39,7 @@ function BoardCtrl($scope, $timeout) {
         $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 1);
 
         // Find new position based off their input
-        var next_direction = $scope.directions.shift();
+        var next_direction = $scope.directions[$scope.move_count];
         $scope.duck_position = positionFromDirection($scope.duck_position, next_direction);
 
         // Check if we hit a wall or something
@@ -48,27 +47,55 @@ function BoardCtrl($scope, $timeout) {
 
         if ( status === "collision" ) {
             console.log("collided");
-
-            if ( $scope.duck_mover ) {
-                $timeout.cancel($scope.duck_mover);
-            }
-
+            $timeout.cancel($scope.duck_mover);
         } else if ( status === "win" ) {
             alert("You've won!");
+            $timeout.cancel($scope.duck_mover);
         } else {
             // Then update board
             $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 2);
 
             // Move the duck again!
             $scope.duck_mover = $timeout($scope.moveDuck, DUCK_SPEED);
+            $scope.move_count++;
         }
+
     };
 
-    inputDirections(function (dirs) {
-        $scope.directions = _.clone(dirs);
-        $scope.moveDuck();
-        $scope.input_timer = "on";
-    });
+    $scope.input_listener = function (e) {
+        $scope.$apply(function () {
+            $scope.directions.push({ 38: 0, 39: 1, 40: 2, 37: 3 }[e.which]);
+        });
+    };
+
+    $scope.inputDirections = function () {
+        document.addEventListener("keyup", $scope.input_listener);
+        $scope.countdown = INPUT_TIMEOUT;
+
+        $scope.input_interval = $interval(function () {
+            if ( $scope.countdown <= 0 ) {
+                // Unbind the listener
+                document.removeEventListener("keyup", $scope.input_listener);
+                // Start moving!
+                $scope.moveDuck();
+                // cancel interval
+                $interval.cancel($scope.input_interval);
+            } else {
+                $scope.countdown--;
+            }
+        }, 1000);
+    };
+
+    $scope.displayArrow = function (dir) {
+        return {
+            0: "&uarr;",
+            1: "&rarr;",
+            2: "&darr;",
+            3: "&larr;"
+        }[dir];
+    };
+
+    $scope.inputDirections();
 };
 
 function randomDirection(position) {
@@ -95,7 +122,7 @@ function randomDirection(position) {
 }
 
 function generatePath(board) {
-    var new_board = board;
+    var new_board = board.slice(0);
     var position = START_POSITION; 
 
     while ( position.x < window.BOARD_WIDTH - 1 ) {
@@ -108,66 +135,23 @@ function generatePath(board) {
 }
 
 function changeBoardAtPosition(board, position, new_tile) {
-    var new_board = _.clone(board);
+    var new_board = board.slice(0);
     new_board[position.y][position.x] = new_tile;
-    return board;
-}
-
-function inputDirections(callback) {
-    var directions = [];
-
-    var listener = function (e) {
-
-        var dir = {
-            38: 0,
-            39: 1,
-            40: 2,
-            37: 3
-        }[e.which] || null;
-
-        if ( ! _.isNull(dir) ) {
-            directions.push(dir);
-        }
-    };
-
-    document.addEventListener("keyup", listener);
-
-    setTimeout(function () {
-        document.removeEventListener("keyup", listener);
-        callback(directions);
-    }, INPUT_TIMEOUT);
+    return new_board;
 }
 
 function positionFromDirection(position, direction) {
-    if ( direction === 0 && position.y !== 0 ) {
-        return { x: position.x, y: position.y - 1 };
-    }
-
-    if ( direction === 1 ) {
-        return { x: position.x + 1, y: position.y };
-    }
-
-    if ( direction === 2 && position.y !== window.BOARD_HEIGHT - 1 ) {
-        return { x: position.x, y: position.y + 1 };
-    }
-
-    if ( direction === 3 && position.x !== 0 ) {
-        return { x: position.x - 1, y: position.y };
-    }
-
-    return position;
+    if ( direction === 0 && position.y !== 0 ) { return { x: position.x, y: position.y - 1 }; } // Up
+    if ( direction === 1 ) { return { x: position.x + 1, y: position.y }; } // Right
+    if ( direction === 2 && position.y !== window.BOARD_HEIGHT - 1 ) { return { x: position.x, y: position.y + 1 }; } // Down
+    if ( direction === 3 && position.x !== 0 ) { return { x: position.x - 1, y: position.y }; } // Left
+    return position; // Don't move
 }
 
 function checkPosition(board, position) {
     var tile = board[position.y][position.x];
 
-    if ( tile === 0 ) {
-        return "collision";
-    }
-
-    if ( position.x >= BOARD_WIDTH ) {
-        return "win";
-    }
-
+    if ( tile === 0 ) { return "collision"; }
+    if ( position.x >= BOARD_WIDTH ) { return "win"; }
     return true;
 }
