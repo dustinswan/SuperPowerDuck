@@ -1,6 +1,9 @@
 * {
     margin: 0; padding: 0;
 }
+.timer .tile.blocked {
+    background: green;
+}
 .row {
     margin-bottom: -6px;/* TODO FIX ME */
 }

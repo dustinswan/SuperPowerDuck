@@ -10,7 +10,7 @@
 </head>
 <body ng-app>
 
-<div ng-controller="BoardCtrl">
+<div ng-controller="BoardCtrl" ng-class="{timer: input_timer == 'off'}">
     <div ng-repeat="row in board" class="row">
         <div ng-repeat="cell in row track by $index" class="tile" ng-class="{blocked: cell == 0, duck: cell == 2}">
         </div>

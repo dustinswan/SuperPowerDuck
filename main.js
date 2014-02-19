@@ -1,4 +1,7 @@
-INPUT_TIMEOUT = 8000;
+// TIMES
+INPUT_TIMEOUT = 4000;
+DUCK_SPEED = 500;
+
 BOARD_HEIGHT = 20;
 BOARD_WIDTH = 60;
 DUCK = 2;
@@ -9,9 +12,10 @@ DOWN_KEY = 40;
 START_POSITION = { x: 0, y: 10 };
 
 
-function BoardCtrl($scope) {
+function BoardCtrl($scope, $timeout) {
     $scope.board = [];
     $scope.duck_position = START_POSITION;
+    $scope.input_timer = "off";
 
     $scope.generateBoard = function () {
         for ( var i = 0; i < window.BOARD_HEIGHT; i++ ) {
@@ -28,23 +32,43 @@ function BoardCtrl($scope) {
     $scope.board = generatePath($scope.board);
     $scope.board = generatePath($scope.board);
 
-    $scope.moveDuck = function (directions) {
+    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 2);
 
-        setInterval(function () {
-            // Remove old duck
-            $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 1);
+    $scope.moveDuck = function () {
 
-            // Find new position based off their input
-            var next_direction = directions.shift();
+        // Remove old duck
+        $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 1);
 
-            //var new_position = $scope.duck_position = 
-            $scope.board = changeBoardAtPosition($scope.board, new_position, 2);
-            //checkForCollisions();
+        // Find new position based off their input
+        var next_direction = $scope.directions.shift();
+        $scope.duck_position = positionFromDirection($scope.duck_position, next_direction);
 
-        }, 2000);
+        // Check if we hit a wall or something
+        var status = checkPosition($scope.board, $scope.duck_position);
+
+        if ( status === "collision" ) {
+            console.log("collided");
+
+            if ( $scope.duck_mover ) {
+                $timeout.cancel($scope.duck_mover);
+            }
+
+        } else if ( status === "win" ) {
+            alert("You've won!");
+        } else {
+            // Then update board
+            $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 2);
+
+            // Move the duck again!
+            $scope.duck_mover = $timeout($scope.moveDuck, DUCK_SPEED);
+        }
     };
 
-    inputDirections($scope.moveDuck);
+    inputDirections(function (dirs) {
+        $scope.directions = _.clone(dirs);
+        $scope.moveDuck();
+        $scope.input_timer = "on";
+    });
 };
 
 function randomDirection(position) {
@@ -93,6 +117,7 @@ function inputDirections(callback) {
     var directions = [];
 
     var listener = function (e) {
+
         var dir = {
             38: 0,
             39: 1,
@@ -133,3 +158,16 @@ function positionFromDirection(position, direction) {
     return position;
 }
 
+function checkPosition(board, position) {
+    var tile = board[position.y][position.x];
+
+    if ( tile === 0 ) {
+        return "collision";
+    }
+
+    if ( position.x >= BOARD_WIDTH ) {
+        return "win";
+    }
+
+    return true;
+}
