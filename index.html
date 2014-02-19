@@ -7,19 +7,24 @@
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.min.js"></script>
     <script src="main.js"></script>
     <link rel="stylesheet" href="style.css" type="text/css" media="screen" charset="utf-8">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 </head>
 <body ng-app>
 
 <div ng-controller="BoardCtrl">
-    <div ng-repeat="row in board" class="row">
-        <div ng-repeat="cell in row track by $index" class="tile" ng-class="{blocked: cell == 0, duck: cell == 2}">
+
+    <div class="board-outer-container">
+        <div class="board-inner-container">
+            <div ng-repeat="row in board" class="row">
+                <div ng-repeat="cell in row track by $index" class="tile" ng-class="{blocked: cell == 0, duck: cell == 2}">
+                </div>
+            </div>
+            <div style="clear: both;"></div>
         </div>
     </div>
 
-    <div ng-bind="countdown" ng-show="countdown != 0"></div>
-    <span ng-repeat="d in directions track by $index">
-        {{ displayArrow(d) }}
-    </span>
+    <div ng-bind="countdown"></div>
+    <i ng-repeat="d in directions track by $index" class="arrow fa" ng-class="{'fa-arrow-up': d == 0, 'fa-arrow-right': d == 1, 'fa-arrow-down': d == 2, 'fa-arrow-left': d == 3, current: $index+1 == move_count}"></i>
 
 </div>
 

@@ -1,13 +1,13 @@
 INPUT_TIMEOUT = 5; // in seconds
-DUCK_SPEED = 500;
+DUCK_SPEED = .5; // in seconds 
 
 BOARD_HEIGHT = 20;
 BOARD_WIDTH = 60;
-DUCK = 2;
-LEFT_KEY = 37;
-UP_KEY = 38;
-RIGHT_KEY = 39;
-DOWN_KEY = 40;
+//DUCK = 2;
+//LEFT_KEY = 37;
+//UP_KEY = 38;
+//RIGHT_KEY = 39;
+//DOWN_KEY = 40;
 START_POSITION = { x: 0, y: 10 };
 
 function BoardCtrl($scope, $timeout, $interval) {
@@ -24,7 +24,27 @@ function BoardCtrl($scope, $timeout, $interval) {
             }
             $scope.board.push(arr);
         }
-    }
+    };
+
+    $scope.scroll_left = 0;
+
+    $scope.pan_board = function () {
+        var left = BOARD_WIDTH * 20; // TODO don't hard code this 20
+        var outer = document.querySelector(".board-outer-container");
+
+        var scroll_interval = $interval(function () {
+            left = left - 5;
+            outer.scrollLeft = left;
+
+            if ( left <= 0 ) {
+                $interval.cancel(scroll_interval);
+
+                // Let them input!
+                $scope.inputDirections();
+            }
+        }, 30);
+
+    };
 
     $scope.generateBoard();
 
@@ -56,7 +76,7 @@ function BoardCtrl($scope, $timeout, $interval) {
             $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 2);
 
             // Move the duck again!
-            $scope.duck_mover = $timeout($scope.moveDuck, DUCK_SPEED);
+            $scope.duck_mover = $timeout($scope.moveDuck, DUCK_SPEED * 1000);
             $scope.move_count++;
         }
 
@@ -86,16 +106,7 @@ function BoardCtrl($scope, $timeout, $interval) {
         }, 1000);
     };
 
-    $scope.displayArrow = function (dir) {
-        return {
-            0: "&uarr;",
-            1: "&rarr;",
-            2: "&darr;",
-            3: "&larr;"
-        }[dir];
-    };
-
-    $scope.inputDirections();
+    $scope.pan_board();
 };
 
 function randomDirection(position) {
