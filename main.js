@@ -1,8 +1,17 @@
-window.BOARD_HEIGHT = 20;
-window.BOARD_WIDTH = 60;
+INPUT_TIMEOUT = 8000;
+BOARD_HEIGHT = 20;
+BOARD_WIDTH = 60;
+DUCK = 2;
+LEFT_KEY = 37;
+UP_KEY = 38;
+RIGHT_KEY = 39;
+DOWN_KEY = 40;
+START_POSITION = { x: 0, y: 10 };
+
 
 function BoardCtrl($scope) {
     $scope.board = [];
+    $scope.duck_position = START_POSITION;
 
     $scope.generateBoard = function () {
         for ( var i = 0; i < window.BOARD_HEIGHT; i++ ) {
@@ -18,6 +27,24 @@ function BoardCtrl($scope) {
 
     $scope.board = generatePath($scope.board);
     $scope.board = generatePath($scope.board);
+
+    $scope.moveDuck = function (directions) {
+
+        setInterval(function () {
+            // Remove old duck
+            $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 1);
+
+            // Find new position based off their input
+            var next_direction = directions.shift();
+
+            //var new_position = $scope.duck_position = 
+            $scope.board = changeBoardAtPosition($scope.board, new_position, 2);
+            //checkForCollisions();
+
+        }, 2000);
+    };
+
+    inputDirections($scope.moveDuck);
 };
 
 function randomDirection(position) {
@@ -45,28 +72,11 @@ function randomDirection(position) {
 
 function generatePath(board) {
     var new_board = board;
-    var current_pos = {x: 0, y: 10};
-    var position = { x: 0, y: 10 }; 
+    var position = START_POSITION; 
 
     while ( position.x < window.BOARD_WIDTH - 1 ) {
         var next_dir = randomDirection(position);
-
-        if ( next_dir === 0 && position.y !== 0 ) {
-            position = { x: position.x, y: position.y - 1 };
-        }
-
-        if ( next_dir === 1 ) {
-            position = { x: position.x + 1, y: position.y };
-        }
-
-        if ( next_dir === 2 && position.y !== window.BOARD_HEIGHT - 1 ) {
-            position = { x: position.x, y: position.y + 1 };
-        }
-
-        if ( next_dir === 3 && position.x !== 0 ) {
-            position = { x: position.x - 1, y: position.y };
-        }
-
+        var position = positionFromDirection(position, next_dir);
         new_board = changeBoardAtPosition(new_board, position, 1);
     }
 
@@ -78,3 +88,48 @@ function changeBoardAtPosition(board, position, new_tile) {
     new_board[position.y][position.x] = new_tile;
     return board;
 }
+
+function inputDirections(callback) {
+    var directions = [];
+
+    var listener = function (e) {
+        var dir = {
+            38: 0,
+            39: 1,
+            40: 2,
+            37: 3
+        }[e.which] || null;
+
+        if ( ! _.isNull(dir) ) {
+            directions.push(dir);
+        }
+    };
+
+    document.addEventListener("keyup", listener);
+
+    setTimeout(function () {
+        document.removeEventListener("keyup", listener);
+        callback(directions);
+    }, INPUT_TIMEOUT);
+}
+
+function positionFromDirection(position, direction) {
+    if ( direction === 0 && position.y !== 0 ) {
+        return { x: position.x, y: position.y - 1 };
+    }
+
+    if ( direction === 1 ) {
+        return { x: position.x + 1, y: position.y };
+    }
+
+    if ( direction === 2 && position.y !== window.BOARD_HEIGHT - 1 ) {
+        return { x: position.x, y: position.y + 1 };
+    }
+
+    if ( direction === 3 && position.x !== 0 ) {
+        return { x: position.x - 1, y: position.y };
+    }
+
+    return position;
+}
+
