@@ -1,5 +1,5 @@
 INPUT_TIMEOUT = 7; // in seconds
-DUCK_SPEED = .5; // in seconds 
+DUCK_SPEED = 0.5; // in seconds 
 
 BOARD_HEIGHT = 20;
 BOARD_WIDTH = 60;
@@ -73,7 +73,7 @@ function BoardCtrl($scope, $timeout, $interval) {
         var status = checkPosition($scope.board, $scope.duck_position);
 
         if ( status === "collision" ) {
-            console.log("collided");
+            alert("TRY HARDER");
             $timeout.cancel($scope.duck_mover);
         } else if ( status === "win" ) {
             alert("You've won!");
@@ -114,23 +114,24 @@ function BoardCtrl($scope, $timeout, $interval) {
     };
 
     $scope.pan_board();
-};
+}
 
 function randomDirection(position) {
+    var x = 1;
     if ( position.y < window.BOARD_HEIGHT / 5 ) {
-        var x = 2;
+        x = 2;
     } else if ( position.y > window.BOARD_HEIGHT / 5 ) {
-        var x = 0;
+        x = 0;
     }
 
-    var move = { 0: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: 1, 11: x }[_.random(0, 11)];
+    var move = { 0: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: x, }[_.random(0, 10)];
 
     // TODO BROKEN
     if ( window.move ) {
-        if (   move === 0 && last_move === 2 
-            || move === 2 && last_move === 0
-            || move === 1 && last_move === 3
-            || move === 3 && last_move === 1 ) {
+        if (   move === 0 && last_move === 2 ||
+               move === 2 && last_move === 0 ||
+               move === 1 && last_move === 3 ||
+               move === 3 && last_move === 1 ) {
             return randomDirection(position);
         }
     }
@@ -145,7 +146,7 @@ function generatePath(board) {
 
     while ( position.x < window.BOARD_WIDTH - 1 ) {
         var next_dir = randomDirection(position);
-        var position = positionFromDirection(position, next_dir);
+        position = positionFromDirection(position, next_dir);
         new_board = changeBoardAtPosition(new_board, position, 1);
     }
 
