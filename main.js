@@ -1,8 +1,10 @@
-INPUT_TIMEOUT = 5; // in seconds
+INPUT_TIMEOUT = 7; // in seconds
 DUCK_SPEED = .5; // in seconds 
 
 BOARD_HEIGHT = 20;
 BOARD_WIDTH = 60;
+TILE_WIDTH = 20; // TODO don't hardcode
+TILE_HEIGHT = 20; // TODO don't hardcode
 //DUCK = 2;
 //LEFT_KEY = 37;
 //UP_KEY = 38;
@@ -29,7 +31,7 @@ function BoardCtrl($scope, $timeout, $interval) {
     $scope.scroll_left = 0;
 
     $scope.pan_board = function () {
-        var left = BOARD_WIDTH * 20; // TODO don't hard code this 20
+        var left = BOARD_WIDTH * TILE_WIDTH;
         var outer = document.querySelector(".board-outer-container");
 
         var scroll_interval = $interval(function () {
@@ -61,6 +63,11 @@ function BoardCtrl($scope, $timeout, $interval) {
         // Find new position based off their input
         var next_direction = $scope.directions[$scope.move_count];
         $scope.duck_position = positionFromDirection($scope.duck_position, next_direction);
+
+        // Shift the viewport
+        var outer = document.querySelector(".board-outer-container");
+        var left = Math.max( ( $scope.duck_position.x - 3 ) * TILE_WIDTH, 0);
+        outer.scrollLeft = left;
 
         // Check if we hit a wall or something
         var status = checkPosition($scope.board, $scope.duck_position);

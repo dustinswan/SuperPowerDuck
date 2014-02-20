@@ -16,15 +16,16 @@
     <div class="board-outer-container">
         <div class="board-inner-container">
             <div ng-repeat="row in board" class="row">
-                <div ng-repeat="cell in row track by $index" class="tile" ng-class="{blocked: cell == 0, duck: cell == 2}">
+                <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="{blocked: cell == 0, 'duck fa-rub': cell == 2}">
                 </div>
             </div>
             <div style="clear: both;"></div>
         </div>
     </div>
 
-    <div ng-bind="countdown"></div>
+    <div>{{ countdown }}</div>
     <i ng-repeat="d in directions track by $index" class="arrow fa" ng-class="{'fa-arrow-up': d == 0, 'fa-arrow-right': d == 1, 'fa-arrow-down': d == 2, 'fa-arrow-left': d == 3, current: $index+1 == move_count}"></i>
+    <div>Forward progress: {{ duck_position.x }}</div>
 
 </div>
 
