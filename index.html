@@ -13,19 +13,38 @@
 
 <div ng-controller="BoardCtrl">
 
-    <div class="board-outer-container">
-        <div class="board-inner-container">
-            <div ng-repeat="row in board" class="row">
-                <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="{blocked: cell == 0, 'duck fa-rub': cell == 2}">
-                </div>
-            </div>
-            <div style="clear: both;"></div>
-        </div>
-    </div>
-
-    <div>{{ countdown }}</div>
+  <div class='directions-container'>
     <i ng-repeat="d in directions track by $index" class="arrow fa" ng-class="{'fa-arrow-up': d == 0, 'fa-arrow-right': d == 1, 'fa-arrow-down': d == 2, 'fa-arrow-left': d == 3, current: $index+1 == move_count}"></i>
-    <div>Forward progress: {{ duck_position.x }}</div>
+  </div>
+
+  <div class="board-outer-container">
+    <div class="board-inner-container">
+
+      <div ng-repeat="row in board" class="row">
+        <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="{blocked: cell == 0, 'duck fa-rub': cell == 2, 'preboard': cell == 4, 'apple': cell == 'apple'}">
+        </div>
+      </div>
+      <div style="clear: both;"></div>
+    </div>
+  </div>
+
+  <div ng-show="pre_countdown !== 0">Input directions in {{ pre_countdown }}</div>
+  <div ng-show="countdown !== 0">{{ countdown }}</div>
+
+  <div class='collision dialog' ng-hide="alive">
+    <h3>TRY HARDER</h3>
+    <p>Your score: {{ duck_position.x - 10 }}</p>
+    <button ng-click="restart()">Try Again</button>
+    <button ng-click="newBoard()">New Level</button>
+    <button ng-click="tweetScore()">TWEET SCORE</button>
+  </div>
+
+  <div class='controller dialog' ng-show="countdown">
+    <div ng-click="input('top')" class='top-button'>up</div>
+    <div ng-click="input('right')" class='right-button'>right</div>
+    <div ng-click="input('down')" class='bottom-button'>down</div>
+    <div ng-click="input('left')" class='left-button'>left</div>
+  </div>
 
 </div>
 

@@ -1,40 +1,66 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 body {
-    margin: 0; padding: 0;
+  font-family: Helvetica, Verdana, sans-sarif;;
+  margin: 0; padding: 0;
 }
 
 .board-outer-container {
-    width: 300px; /* TODO */
-    overflow: hidden;
+  width: 300px; /* TODO */
+  overflow: hidden;
 }
 .board-inner-container {
-    width: 1200px; /* TODO */
-    background-color: #222;
+  width: 1200px; /* TODO */
+  background-color: #222;
 }
 
 .row {
-    clear: both;
+  clear: both;
 }
 .tile {
-    float: left;
-    height: 19px;
-    width: 19px;
-    background-color: #fff;
-    margin: 0 1px 1px 0;
+  float: left;
+  height: 19px;
+  width: 19px;
+  background-color: blue;
+  margin: 0 1px 1px 0;
 }
 .tile.blocked { background: #000; }
 .tile.duck { background: yellow; }
+.tile.preboard { background: green; }
+.tile.apple { background: red; }
 
+.directions-container {
+  position: absolute;
+  top: 0; right: 0; left: 0;
+  z-index: 2;
+}
 .arrow {
-    width: 20px;
-    height: 20px;
+  color: #888;
+  width: 20px;
+  height: 20px;
 }
 .arrow.current {
-    color: red;
+  color: red;
 }
 .arrow.up:after { content: "up"; }
 .arrow.right:after { content: "right"; }
 .arrow.down:after { content: "down"; }
 .arrow.left:after { content: "left"; }
+
+
+/* Dialogs */
+.dialog {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background-color: #fff;
+  padding: 20px;
+}
+
+/* Controller */
+.controller div {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #000;
+}
