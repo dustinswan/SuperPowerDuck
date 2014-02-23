@@ -6,12 +6,7 @@ BOARD_WIDTH = 60;
 TILE_WIDTH = 20; // TODO don't hardcode
 TILE_HEIGHT = 20; // TODO don't hardcode
 PREBOARD_WIDTH = 9;
-//DUCK = 2;
-//LEFT_KEY = 37;
-//UP_KEY = 38;
-//RIGHT_KEY = 39;
-//DOWN_KEY = 40;
-DUCK_START_POSITION = { x: parseInt(PREBOARD_WIDTH/2, 10), y: 10 };
+DUCK_START_POSITION = { x: parseInt(PREBOARD_WIDTH / 2, 10), y: parseInt(BOARD_HEIGHT / 2, 10) };
 
 function BoardCtrl($scope, $timeout, $interval) {
   $scope.apple_difficulty = 5;
@@ -27,7 +22,7 @@ function BoardCtrl($scope, $timeout, $interval) {
     $scope.scroll_left = 0;
 
     // Draw duck
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 2);
+    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 'duck');
 
     $scope.pan_board();
   };
@@ -114,7 +109,7 @@ function BoardCtrl($scope, $timeout, $interval) {
     // Shift the viewport
     $scope.shiftViewport();
 
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 2);
+    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 'duck');
   };
 
   $scope.moveDuck = function () {
@@ -138,6 +133,9 @@ function BoardCtrl($scope, $timeout, $interval) {
     // Check if we hit a wall or something
     var status = checkPosition($scope.board, $scope.duck_position);
 
+    // Update board
+    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 'duck');
+
     if ( status === "collision" ) {
       $scope.alive = false;
     } else if ( status === "win" ) {
@@ -160,9 +158,6 @@ function BoardCtrl($scope, $timeout, $interval) {
 
     } else {
 
-      // Then update board
-      $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 2);
-
       // if we are at the end, stop trying to move duck
       if ( $scope.move_count === $scope.directions.length ) {
         $scope.alive = false;
@@ -183,7 +178,7 @@ function BoardCtrl($scope, $timeout, $interval) {
 
   // For on-screen buttons
   $scope.input = function (dir) {
-    $scope.directions.push({ top: 0, right: 1, down: 2, left: 3 }[dir]);
+    $scope.directions.push({ up: 0, right: 1, down: 2, left: 3 }[dir]);
   };
 
   $scope.inputDirections = function () {

@@ -24,11 +24,14 @@ body {
   width: 19px;
   background-color: blue;
   margin: 0 1px 1px 0;
+  text-align: center;
 }
+.tile:before { line-height: 20px; }
+
 .tile.blocked { background: #000; }
 .tile.duck { background: yellow; }
 .tile.preboard { background: green; }
-.tile.apple { background: red; }
+.tile.apple { color: red; }
 
 .directions-container {
   position: absolute;
@@ -36,7 +39,7 @@ body {
   z-index: 2;
 }
 .arrow {
-  color: #888;
+  color: white;
   width: 20px;
   height: 20px;
 }
@@ -52,15 +55,30 @@ body {
 /* Dialogs */
 .dialog {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  background-color: #fff;
-  padding: 20px;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  background-color: rgba(255,255,255,0.75);
+  padding: 10px;
+  z-index: 3;
 }
+.dialog.clear { background-color: transparent; }
 
 /* Controller */
-.controller div {
-  width: 30px;
-  height: 30px;
-  border: 1px solid #000;
+.controller {
+
 }
+.controller div {
+  position: absolute;
+  opacity: 0.8;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  border: 1px solid #000;
+  background-color: rgba(255,255,255,0.5);
+}
+.up-button { top: 0; left: 60px; }
+.right-button { top: 60px; left: 120px; }
+.down-button { top: 120px; left: 60px; }
+.left-button { top: 60px; left: 0px; }

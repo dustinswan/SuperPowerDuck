@@ -21,7 +21,7 @@
     <div class="board-inner-container">
 
       <div ng-repeat="row in board" class="row">
-        <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="{blocked: cell == 0, 'duck fa-rub': cell == 2, 'preboard': cell == 4, 'apple': cell == 'apple'}">
+        <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="{blocked: cell == 0, 'duck fa-rub': cell == 'duck', preboard: cell == 4, 'apple fa-apple': cell == 'apple'}">
         </div>
       </div>
       <div style="clear: both;"></div>
@@ -31,7 +31,7 @@
   <div ng-show="pre_countdown !== 0">Input directions in {{ pre_countdown }}</div>
   <div ng-show="countdown !== 0">{{ countdown }}</div>
 
-  <div class='collision dialog' ng-hide="alive">
+  <div class='dialog' ng-hide="alive">
     <h3>TRY HARDER</h3>
     <p>Your score: {{ duck_position.x - 10 }}</p>
     <button ng-click="restart()">Try Again</button>
@@ -39,11 +39,11 @@
     <button ng-click="tweetScore()">TWEET SCORE</button>
   </div>
 
-  <div class='controller dialog' ng-show="countdown">
-    <div ng-click="input('top')" class='top-button'>up</div>
-    <div ng-click="input('right')" class='right-button'>right</div>
-    <div ng-click="input('down')" class='bottom-button'>down</div>
-    <div ng-click="input('left')" class='left-button'>left</div>
+  <div class='controller dialog clear' ng-show="countdown">
+    <div ng-click="input('up')" class='up-button'></div>
+    <div ng-click="input('right')" class='right-button'></div>
+    <div ng-click="input('down')" class='down-button'></div>
+    <div ng-click="input('left')" class='left-button'></div>
   </div>
 
 </div>
