@@ -21,7 +21,7 @@
     <div class="board-inner-container">
 
       <div ng-repeat="row in board" class="row">
-        <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="{blocked: cell == 0, 'duck fa-rub': cell == 'duck', preboard: cell == 4, 'apple fa-apple': cell == 'apple'}">
+        <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="{water: cell == 1, blocked: cell == 0, 'duck fa-rub': cell == 'duck', preboard: cell == 4, 'apple fa-apple': cell == 'apple'}">
         </div>
       </div>
       <div style="clear: both;"></div>

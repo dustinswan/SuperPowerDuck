@@ -22,16 +22,16 @@ body {
   float: left;
   height: 19px;
   width: 19px;
-  background-color: blue;
   margin: 0 1px 1px 0;
   text-align: center;
 }
 .tile:before { line-height: 20px; }
 
-.tile.blocked { background: #000; }
+.tile.blocked { background: black; }
+.tile.water { background-image: url('water.png'); }
 .tile.duck { background: yellow; }
-.tile.preboard { background: green; }
-.tile.apple { color: red; }
+.tile.preboard { background-image: url('grass.png'); }
+.tile.apple { background-image: url('water.png'); color: red; }
 
 .directions-container {
   position: absolute;
