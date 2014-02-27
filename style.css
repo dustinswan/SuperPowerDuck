@@ -7,11 +7,11 @@ body {
 }
 
 .board-outer-container {
-  width: 300px; /* TODO */
+  width: 300px;
   overflow: hidden;
 }
 .board-inner-container {
-  width: 1200px; /* TODO */
+  width: 1200px;
   background-color: #222;
 }
 
@@ -24,6 +24,7 @@ body {
   width: 19px;
   margin: 0 1px 1px 0;
   text-align: center;
+  background: black;
 }
 .tile:before { line-height: 20px; }
 

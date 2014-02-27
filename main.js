@@ -2,14 +2,14 @@ INPUT_TIMEOUT = 7; // in seconds
 DUCK_SPEED = 0.5; // in seconds
 
 BOARD_HEIGHT = 20;
-BOARD_WIDTH = 60;
+BOARD_WIDTH = 58;
 TILE_WIDTH = 20; // TODO don't hardcode
 TILE_HEIGHT = 20; // TODO don't hardcode
-PREBOARD_WIDTH = 9;
-DUCK_START_POSITION = { x: parseInt(PREBOARD_WIDTH / 2, 10), y: parseInt(BOARD_HEIGHT / 2, 10) };
+DUCK_START_POSITION = { x: 0, y: parseInt(BOARD_HEIGHT / 2, 10) };
+window.apple_difficulty = 5; // TODO fix
+window.last_apple_column;
 
 function BoardCtrl($scope, $timeout, $interval) {
-  $scope.apple_difficulty = 5;
 
   $scope.init = function () {
     $scope.duck_position = DUCK_START_POSITION;
@@ -17,14 +17,13 @@ function BoardCtrl($scope, $timeout, $interval) {
     $scope.move_count = 0;
     $scope.pre_countdown = 3;
     $scope.alive = true;
-    $scope.apple_difficulty = 5;
 
     $scope.scroll_left = 0;
 
     // Draw duck
     $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 'duck');
 
-    $scope.pan_board();
+    $timeout($scope.pan_board, 2000);
   };
 
   $scope.generateBoard = function () {
@@ -46,27 +45,44 @@ function BoardCtrl($scope, $timeout, $interval) {
 
     // Draw apples
     var column = 0;
-    while (PREBOARD_WIDTH + column < window.BOARD_WIDTH ) {
-      column = column + $scope.apple_difficulty;
-      $scope.apple_difficulty++;
-      $scope.board = generateAdders($scope.board, PREBOARD_WIDTH + column);
+    while (true) { // TODO make pretty
+      column = column + _.random(5, 7);//apple_difficulty;
+      window.apple_difficulty++;
+      if ( column >= window.BOARD_WIDTH ) { break; }
+      $scope.board = generateAdders($scope.board, column);
     }
-    $scope.board = generatePreboard($scope.board);
+    window.last_apple_column = column;
 
     $scope.init();
 
   };
 
-  $scope.pan_board = function () {
-    var left = BOARD_WIDTH * TILE_WIDTH;
+  $scope.pan_board = function (start_left) {
+    var max = BOARD_WIDTH * TILE_WIDTH;
     var outer = document.querySelector(".board-outer-container");
+    var start_left = start_left || 0;
+    var left = start_left;
+
+        $scope.pre_countdown = 3;
+        var countdown_interval = $interval(function () {
+          $scope.pre_countdown--;
+          if ( $scope.pre_countdown === 0 ) {
+            $interval.cancel(countdown_interval);
+            // Let them input!
+            $scope.inputDirections();
+          }
+        }, 1000);
+
+        return;
 
     var scroll_interval = $interval(function () {
-      left = left - 5;
+      left = left + 5;
       outer.scrollLeft = left;
 
-      if ( left <= 0 ) {
+      if ( left >= max ) {
         $interval.cancel(scroll_interval);
+
+        outer.scrollLeft = start_left;
 
         $scope.pre_countdown = 3;
         var countdown_interval = $interval(function () {
@@ -86,6 +102,8 @@ function BoardCtrl($scope, $timeout, $interval) {
   $scope.newBoard();
 
   $scope.restart = function () {
+    window.BOARD_WIDTH = 60;
+    window.apple_difficulty = 5;
     $scope.init();
     //$scope.shiftViewport();
   };
@@ -116,12 +134,11 @@ function BoardCtrl($scope, $timeout, $interval) {
 
     // Remove old duck
     //var old_tile = $scope.board[$scope.duck_position.x][$scope.duck_position.y];
-    //console.log(old_tile);
     $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 1);
 
     // Find new position based off their input
     var next_direction = $scope.directions[$scope.move_count];
-    if ( next_direction === 4 && $scope.duck_position.x <= window.PREBOARD_WIDTH ) {
+    if ( next_direction === 4 && $scope.duck_position.x <= 0 ) {
       console.log("Can't move into grass");
     } else {
       $scope.duck_position = positionFromDirection($scope.duck_position, next_direction);
@@ -145,16 +162,13 @@ function BoardCtrl($scope, $timeout, $interval) {
       // TODO ABSTRACT DIS
       $scope.directions = [];
       $scope.move_count = 0;
-      $scope.pre_countdown = 3;
 
-      var countdown_interval = $interval(function () {
-        $scope.pre_countdown--;
-        if ( $scope.pre_countdown === 0 ) {
-          $interval.cancel(countdown_interval);
-          // Let them input!
-          $scope.inputDirections();
-        }
-      }, 1000);
+      // Add more board
+      $scope.board = addMoreBoard($scope.board);
+
+      // pan to end, then pan back to duck
+      var left = ($scope.duck_position.x - 3) * TILE_WIDTH;
+      $scope.pan_board(left); // This starts the input thing
 
     } else {
 
@@ -193,13 +207,7 @@ function BoardCtrl($scope, $timeout, $interval) {
         // cancel interval
         $interval.cancel($scope.input_interval);
 
-        // First time moving duck? get it out of preboard
-        if ( $scope.duck_position.x <= 10 ) {
-          $scope.doneInputtingDirections();
-        } else { // recently got an apple and inputted dirs
-          // Start moving!
           $scope.moveDuck();
-        }
 
       } else {
         $scope.countdown--;
@@ -213,7 +221,7 @@ function BoardCtrl($scope, $timeout, $interval) {
       if ( countdown <= 0 ) {
         $interval.cancel(interval);
 
-        $scope.board = generatePreboard($scope.board); // TODO FIX ME
+        //$scope.board = generatePreboard($scope.board); // TODO FIX ME
 
         // Start moving!
         $scope.moveDuck();
@@ -258,33 +266,18 @@ function randomDirection(position) {
   return move;
 }
 
-function generatePreboard(board) {
-  var new_board = board.slice(0);
-  var position = { x: 0, y: 0 };
-
-    for ( var i = 0; i < window.BOARD_HEIGHT; i++ ) {
-      var arr = [];
-      for ( var j = 0; j < window.PREBOARD_WIDTH; j++ ) {
-        new_board = changeBoardAtPosition(new_board, { x: j, y: i}, 4);
-      }
-    }
-
-
-  return new_board;
-}
-
 function generateAdders(board, column) {
   var new_board = board.slice(0);
 
   var i = 0;
   while ( true ) {
 
-    i++;
     if ( i > 200 ) {
-      console.log("OMG"); // TODO WTF
+      console.log("WTF");
       return new_board;
     }
 
+    i++;
     var row = _.random(0, BOARD_HEIGHT-1);
 
     if ( new_board[row][column] === 1 ) {
@@ -296,9 +289,11 @@ function generateAdders(board, column) {
 
 }
 
-function generatePath(board) {
+function generatePath(board, position) {
   var new_board = board.slice(0);
-  var position = { x: window.PREBOARD_WIDTH, y: 10 };
+  if ( ! position ) {
+    position = { x: 0, y: 10 };
+  }
   new_board = changeBoardAtPosition(new_board, position, 1);
 
   while ( position.x < BOARD_WIDTH - 1 ) {
@@ -331,4 +326,53 @@ function checkPosition(board, position) {
   if ( tile === 'apple' ) { return "apple"; }
   if ( position.x >= BOARD_WIDTH ) { return "win"; }
   return true;
+}
+
+function addMoreBoard(board) {
+  var new_board = board.slice(0);
+  var column = BOARD_WIDTH-1;
+
+  var highest, lowest;
+
+  // find top path
+  for (i = 0; i < BOARD_HEIGHT; i++ ) {
+    if ( new_board[i][column] === 1 ) {
+      highest = i;
+      break;
+    }
+  }
+
+  // find bottom path
+  for (i = BOARD_HEIGHT-1; i >= 0; i--) {
+    if ( new_board[i][column] === 1 ) {
+      lowest = i;
+      break;
+    }
+  }
+
+  increaseBoardWidth(window.apple_difficulty - 1);
+
+  new_board = generatePath(new_board, { x: column, y: lowest });
+  new_board = generatePath(new_board, { x: column, y: highest });
+
+  // TODO abstract
+  // Draw more apples
+  column = window.last_apple_column;
+  while (true) {
+    column = column + _.random(5, 7); //window.apple_difficulty;
+    window.apple_difficulty++;
+    new_board = generateAdders(new_board, column);
+    if ( column >= window.BOARD_WIDTH ) { break; }
+  }
+  window.last_apple_column = column;
+
+  return new_board;
+
+}
+
+function increaseBoardWidth(count) {
+  window.BOARD_WIDTH += count;
+  var new_width_pixels = BOARD_WIDTH * TILE_WIDTH;
+  var inner = document.querySelector(".board-inner-container");
+  inner.style.width = new_width_pixels + "px";
 }
