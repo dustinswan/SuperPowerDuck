@@ -3,13 +3,13 @@
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <title>SuperPowerDuck</title>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.min.js"></script>
-    <script src="main.js"></script>
-    <link rel="stylesheet" href="style.css" type="text/css" media="screen" charset="utf-8">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <script src="js/underscore-min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/main.js"></script>
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8">
+    <link href="css/font-awesome.css" rel="stylesheet">
 </head>
-<body ng-app>
+<body ng-app="DuckApp">
 
 <div ng-controller="BoardCtrl">
 
@@ -28,8 +28,7 @@
     </div>
   </div>
 
-  <div ng-show="pre_countdown !== 0">Input directions in {{ pre_countdown }}</div>
-  <div ng-show="countdown !== 0">{{ countdown }}</div>
+  <div ng-show="pre_countdown !== 0">{{ pre_countdown }}</div>
 
   <div class='dialog' ng-hide="alive">
     <h3>TRY HARDER</h3>
@@ -39,11 +38,12 @@
     <button ng-click="tweetScore()">TWEET SCORE</button>
   </div>
 
-  <div class='controller dialog clear' ng-show="countdown">
-    <div ng-click="input('up')" class='up-button'></div>
-    <div ng-click="input('right')" class='right-button'></div>
-    <div ng-click="input('down')" class='down-button'></div>
-    <div ng-click="input('left')" class='left-button'></div>
+  <div class='controller' ng-show="countdown">
+    <div class="countdown">{{ countdown }}</div>
+    <div ng-tap="input('up')" class='controller-button up-button'></div>
+    <div ng-tap="input('right')" class='controller-button right-button'></div>
+    <div ng-tap="input('down')" class='controller-button down-button'></div>
+    <div ng-tap="input('left')" class='controller-button left-button'></div>
   </div>
 
 </div>

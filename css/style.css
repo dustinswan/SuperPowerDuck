@@ -1,13 +1,17 @@
 * {
   box-sizing: border-box;
 }
+html, body {
+  height: 100%;
+}
 body {
   font-family: Helvetica, Verdana, sans-sarif;;
   margin: 0; padding: 0;
 }
 
 .board-outer-container {
-  width: 300px;
+  height: 100%;
+  width: 100%;
   overflow: hidden;
 }
 .board-inner-container {
@@ -29,10 +33,10 @@ body {
 .tile:before { line-height: 20px; }
 
 .tile.blocked { background: black; }
-.tile.water { background-image: url('water.png'); }
+.tile.water { background-image: url('../img/water.png'); }
 .tile.duck { background: yellow; }
-.tile.preboard { background-image: url('grass.png'); }
-.tile.apple { background-image: url('water.png'); color: red; }
+.tile.preboard { background-image: url('../img/grass.png'); }
+.tile.apple { background-image: url('../img/water.png'); color: red; }
 
 .directions-container {
   position: absolute;
@@ -68,18 +72,20 @@ body {
 
 /* Controller */
 .controller {
-
+  position: absolute;
+  top: 0;
+  left: 0; right: 0;
 }
-.controller div {
+.controller-button {
   position: absolute;
   opacity: 0.8;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50px;
   border: 1px solid #000;
   background-color: rgba(255,255,255,0.5);
 }
-.up-button { top: 0; left: 60px; }
-.right-button { top: 60px; left: 120px; }
-.down-button { top: 120px; left: 60px; }
-.left-button { top: 60px; left: 0px; }
+.up-button { top: 0; left: 150px; }
+.right-button { top: 150px; left: 300px; }
+.down-button { top: 300px; left: 150px; }
+.left-button { top: 150px; left: 0px; }

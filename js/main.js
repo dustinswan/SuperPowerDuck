@@ -1,15 +1,37 @@
 INPUT_TIMEOUT = 7; // in seconds
 DUCK_SPEED = 0.5; // in seconds
 
-BOARD_HEIGHT = 20;
+BOARD_HEIGHT = parseInt(window.screen.availHeight / 20, 10);
 BOARD_WIDTH = 58;
 TILE_WIDTH = 20; // TODO don't hardcode
 TILE_HEIGHT = 20; // TODO don't hardcode
 DUCK_START_POSITION = { x: 0, y: parseInt(BOARD_HEIGHT / 2, 10) };
 window.apple_difficulty = 5; // TODO fix
-window.last_apple_column;
 
-function BoardCtrl($scope, $timeout, $interval) {
+var DuckApp = angular.module('DuckApp', []);
+
+DuckApp.directive('ngTap', function() {
+  return function(scope, element, attrs) {
+    var tapping;
+    tapping = false;
+    element.bind('touchstart', function(e) {
+      element.addClass('active');
+      tapping = true;
+    });
+    element.bind('touchmove', function(e) {
+      element.removeClass('active');
+      tapping = false;
+    });
+    element.bind('touchend', function(e) {
+      element.removeClass('active');
+      if (tapping) {
+        scope.$apply(attrs['ngTap'], element);
+      }
+    });
+  };
+});
+
+DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
   $scope.init = function () {
     $scope.duck_position = DUCK_START_POSITION;
@@ -62,6 +84,8 @@ function BoardCtrl($scope, $timeout, $interval) {
     var outer = document.querySelector(".board-outer-container");
     var start_left = start_left || 0;
     var left = start_left;
+
+      outer.scrollLeft = start_left;
 
         $scope.pre_countdown = 3;
         var countdown_interval = $interval(function () {
@@ -240,7 +264,7 @@ function BoardCtrl($scope, $timeout, $interval) {
     alert("OK TWEETED THX");
   };
 
-}
+});
 
 function randomDirection(position) {
   var x = 1;
@@ -292,7 +316,7 @@ function generateAdders(board, column) {
 function generatePath(board, position) {
   var new_board = board.slice(0);
   if ( ! position ) {
-    position = { x: 0, y: 10 };
+    position = { x: 0, y: parseInt(BOARD_HEIGHT / 2, 10) };
   }
   new_board = changeBoardAtPosition(new_board, position, 1);
 
