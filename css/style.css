@@ -56,7 +56,6 @@ body {
 .arrow.down:after { content: "down"; }
 .arrow.left:after { content: "left"; }
 
-
 /* Dialogs */
 .dialog {
   position: absolute;
@@ -73,8 +72,10 @@ body {
 /* Controller */
 .controller {
   position: absolute;
-  top: 0;
-  left: 0; right: 0;
+  bottom: 0;
+  left: 0;
+  width: 300px;
+  height: 300px;
 }
 .controller-button {
   position: absolute;
@@ -85,7 +86,19 @@ body {
   border: 1px solid #000;
   background-color: rgba(255,255,255,0.5);
 }
-.up-button { top: 0; left: 150px; }
-.right-button { top: 150px; left: 300px; }
-.down-button { top: 300px; left: 150px; }
-.left-button { top: 150px; left: 0px; }
+.up-button { top: 0; left: 100px; }
+.right-button { top: 100px; left: 200px; }
+.down-button { top: 200px; left: 100px; }
+.left-button { top: 100px; left: 0px; }
+
+/* big notification */
+.big-notification {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0; right: 0;
+  height: 100%;
+  line-height: 100%;
+  text-align: center;
+  font-size: 300px;
+  color: rgba(255,255,255,0.5);
+}
