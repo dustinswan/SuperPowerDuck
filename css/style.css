@@ -1,12 +1,11 @@
-* {
-  box-sizing: border-box;
-}
-html, body {
-  height: 100%;
-}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
 body {
   font-family: Helvetica, Verdana, sans-sarif;;
   margin: 0; padding: 0;
+  background: black;
+  padding-top: 20px;
+  position: relative;
 }
 
 .board-outer-container {
@@ -15,7 +14,7 @@ body {
   overflow: hidden;
 }
 .board-inner-container {
-  width: 1200px;
+  width: 1450px;
   background-color: #222;
 }
 
@@ -24,37 +23,74 @@ body {
 }
 .tile {
   float: left;
-  height: 19px;
-  width: 19px;
+  height: 24px;
+  width: 24px;
   margin: 0 1px 1px 0;
   text-align: center;
   background: black;
+  position: relative;
+  /*z-index: 2;*/
 }
-.tile:before { line-height: 20px; }
+.tile:before { line-height: 25px; }
 
 .tile.blocked { background: black; }
 .tile.water { background-image: url('../img/water.png'); }
-.tile.duck { background: yellow; }
 .tile.preboard { background-image: url('../img/grass.png'); }
 .tile.apple { background-image: url('../img/water.png'); color: red; }
+.tile.duck:after {
+  content: "D";
+  background: yellow;
+  height: 25px; width: 25px;
+  position: absolute;
+  top: 0; left: 0;
+  /*z-index: 3;*/
+}
+
+.duck.moving-up:after {
+  -webkit-animation: move-up 1s;
+}
+@-webkit-keyframes move-up {
+  from { top: 0px; }
+  to { top: -25px; }
+}
+
+.duck.moving-right:after {
+  -webkit-animation: move-right 1s;
+}
+@-webkit-keyframes move-right {
+  from { left: 0px; }
+  to { left: 25px; }
+}
+
+.duck.moving-down:after {
+  -webkit-animation: move-down 1s;
+}
+@-webkit-keyframes move-down {
+  from { top: 0px; }
+  to { top: 25px; }
+}
+
+.duck.moving-left:after {
+  -webkit-animation: move-left 1s;
+}
+@-webkit-keyframes move-left {
+  from { left: 0px; }
+  to { left: -25px; }
+}
 
 .directions-container {
   position: absolute;
   top: 0; right: 0; left: 0;
-  z-index: 2;
+  z-index: 5;
 }
 .arrow {
   color: white;
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
 }
 .arrow.current {
   color: red;
 }
-.arrow.up:after { content: "up"; }
-.arrow.right:after { content: "right"; }
-.arrow.down:after { content: "down"; }
-.arrow.left:after { content: "left"; }
 
 /* Dialogs */
 .dialog {
@@ -65,7 +101,7 @@ body {
   bottom: 10px;
   background-color: rgba(255,255,255,0.75);
   padding: 10px;
-  z-index: 3;
+  z-index: 5;
 }
 .dialog.clear { background-color: transparent; }
 
@@ -84,7 +120,12 @@ body {
   height: 100px;
   border-radius: 50px;
   border: 1px solid #000;
-  background-color: rgba(255,255,255,0.5);
+  background-color: rgba(255,255,255,0.20);
+
+  text-align: center;
+  line-height: 100px;
+  font-size: 100px;
+  color: rgba(0,0,0,0.5);
 }
 .up-button { top: 0; left: 100px; }
 .right-button { top: 100px; left: 200px; }
@@ -94,11 +135,9 @@ body {
 /* big notification */
 .big-notification {
   position: absolute;
-  top: 0; bottom: 0;
-  left: 0; right: 0;
-  height: 100%;
-  line-height: 100%;
-  text-align: center;
-  font-size: 300px;
+  top: 0;
+  left: 0;
+  font-size: 100px;
+  line-height: 100px;
   color: rgba(255,255,255,0.5);
 }
