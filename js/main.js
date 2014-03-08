@@ -255,16 +255,16 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     var highest, lowest;
 
     // find path1
-    for (i = 0; i < BOARD_HEIGHT; i++ ) {
-      if ( $scope.board[i][column] === 'path1' ) {
+    for (i = 0; i < window.BOARD_HEIGHT; i++ ) {
+      if ( $scope.board[i][column] === 'path1' || $scope.board[i][colimn] === 'path2' ) {
         highest = i;
         break;
       }
     }
 
     // find path2
-    for (i = BOARD_HEIGHT-1; i >= 0; i--) {
-      if ( $scope.board[i][column] === 'path2' ) {
+    for (i = window.BOARD_HEIGHT-1; i >= 0; i--) {
+      if ( $scope.board[i][column] === 'path2' || $scope.board[i][column] === 'path1' ) {
         lowest = i;
         break;
       }
@@ -327,21 +327,26 @@ function randomDirection(position) {
 }
 
 function generateAdders(board, column, tile) {
+  console.log("generateAdders");
+  console.log(column, tile);
   var new_board = board.slice(0);
 
   var i = 0;
   while ( true ) {
 
-    if ( i > 200 ) {
+    if ( i > 100 ) {
       console.log("WTF");
       return new_board;
     }
 
     i++;
-    var row = _.random(0, BOARD_HEIGHT-1);
+    var row = _.random(0, window.BOARD_HEIGHT-1);
+    console.log(row);
 
     if ( new_board[row][column] === tile) {
       new_board[row][column] = "apple";
+      console.log("adding one!");
+      console.log(row, column);
       return new_board;
     }
 
@@ -356,7 +361,6 @@ function generatePath(board, position, tile) {
   }
   new_board = changeBoardAtPosition(new_board, position, tile);
 
-  console.log(boardWidth());
   while ( position.x < boardWidth() - 1 ) {
     var next_dir = randomDirection(position);
     position = positionFromDirection(position, next_dir);
@@ -376,7 +380,7 @@ function positionFromDirection(position, direction) {
   if ( direction === 0 && position.y !== 0 ) { return { x: position.x, y: position.y - 1 }; } // Up
   if ( direction === 1 ) { return { x: position.x + 1, y: position.y }; } // Right
   if ( direction === 2 && position.y !== window.BOARD_HEIGHT - 1 ) { return { x: position.x, y: position.y + 1 }; } // Down
-  if ( direction === 3 && position.x >= 10 ) { return { x: position.x - 1, y: position.y }; } // Left
+  if ( direction === 3 && position.x >= 0 ) { return { x: position.x - 1, y: position.y }; } // Left
   return position; // Don't move
 }
 
