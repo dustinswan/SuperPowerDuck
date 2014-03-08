@@ -311,7 +311,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
       classes += "water ";
     }
     if ( _.contains(things, "apple") ) {
-      classes += "fa fa-apple apple ";
+      classes += "apple ";
     }
     if ( _.isEmpty(things) ) {
       classes += "blocked";
@@ -407,11 +407,10 @@ function positionFromDirection(position, direction) {
 }
 
 function checkPosition(board, position) {
-  var tile = board[position.y][position.x];
+  var things = board[position.y][position.x];
 
-  if ( ! _.contains(board, "path1") && ! _.contains(board, "path2") ) { return "collision"; }
-  if ( _.contains(board, "apple") ) { return "apple"; }
-  //if ( position.x >= boardWidth() ) { return "win"; }
+  if ( ! _.contains(things, "path1") && ! _.contains(things, "path2") ) { return "collision"; }
+  if ( _.contains(things, "apple") ) { return "apple"; }
   return true;
 }
 
