@@ -51,7 +51,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     $scope.scroll_left = 0;
 
     // Draw duck
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 'duck');
+    $scope.board = addToPosition($scope.board, $scope.duck_position, 'duck');
 
     $timeout($scope.pan_board, 2000);
   };
@@ -60,7 +60,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     for ( var i = 0; i < window.BOARD_HEIGHT; i++ ) {
       var arr = [];
       for ( var j = 0; j < window.BOARD_STARTING_WIDTH; j++ ) {
-        arr.push(0);
+        arr.push([]);
       }
       $scope.board.push(arr);
     }
@@ -124,22 +124,21 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   $scope.placeDuck = function (position) {
 
     // Remove old duck
-    var old_tile = $scope.board[$scope.duck_position.x][$scope.duck_position.y];
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, old_tile);
+    $scope.board = removeFromPosition($scope.board, $scope.duck_position, 'duck');
 
     $scope.duck_position = position;
 
     // Shift the viewport
     $scope.shiftViewport();
 
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 'duck');
+    $scope.board = addToPosition($scope.board, $scope.duck_position, 'duck');
   };
 
   $scope.moveDuck = function () {
 
     // Remove old duck
     //var old_tile = $scope.board[$scope.duck_position.x][$scope.duck_position.y];
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 1);
+    $scope.board = removeFromPosition($scope.board, $scope.duck_position, 'duck');
 
     // Find new position based off their input
     var next_direction = $scope.directions[$scope.move_count];
@@ -156,7 +155,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     var status = checkPosition($scope.board, $scope.duck_position);
 
     // Update board
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 'duck');
+    $scope.board = addToPosition($scope.board, $scope.duck_position, 'duck');
 
     // Add CSS class to animate duck
     //$scope.next_next_direction = $scope.directions[$scope.move_count + 1];
@@ -253,10 +252,12 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     var column = boardWidth() - 1;
 
     var highest, lowest;
+    var things;
 
     // find path1
     for (i = 0; i < window.BOARD_HEIGHT; i++ ) {
-      if ( $scope.board[i][column] === 'path1' || $scope.board[i][colimn] === 'path2' ) {
+      things = $scope.board[i][column];
+      if ( _.contains(things, 'path1') || _.contains(things, 'path2') ) {
         highest = i;
         break;
       }
@@ -264,7 +265,8 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
     // find path2
     for (i = window.BOARD_HEIGHT-1; i >= 0; i--) {
-      if ( $scope.board[i][column] === 'path2' || $scope.board[i][column] === 'path1' ) {
+      things = $scope.board[i][column];
+      if ( _.contains(things, 'path1') || _.contains(things, 'path2') ) {
         lowest = i;
         break;
       }
@@ -291,13 +293,30 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   $scope.increaseBoardWidth = function (count) {
     for ( var i = 0; i < window.BOARD_HEIGHT; i++ ) {
       for ( var j = 0; j < count; j++ ) {
-        $scope.board[i].push(0);
+        $scope.board[i].push([]);
       }
     }
 
     var new_width_pixels = boardWidth() * TILE_WIDTH;
     var inner = document.querySelector(".board-inner-container");
     inner.style.width = new_width_pixels + "px";
+  };
+
+  $scope.tileClasses = function (things) {
+    var classes = "";
+    if ( _.contains(things, "duck") ) {
+      classes += "duck ";
+    }
+    if ( _.contains(things, "path1") || _.contains(things, "path2") ) {
+      classes += "water ";
+    }
+    if ( _.contains(things, "apple") ) {
+      classes += "fa fa-apple apple ";
+    }
+    if ( _.isEmpty(things) ) {
+      classes += "blocked";
+    }
+    return classes;
   };
 
 });
@@ -313,7 +332,7 @@ function randomDirection(position) {
   var move = { 0: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: x, }[_.random(0, 10)];
 
   // TODO BROKEN
-  if ( window.move ) {
+  if ( window.last_move ) {
     if (   move === 0 && last_move === 2 ||
         move === 2 && last_move === 0 ||
         move === 1 && last_move === 3 ||
@@ -327,8 +346,6 @@ function randomDirection(position) {
 }
 
 function generateAdders(board, column, tile) {
-  console.log("generateAdders");
-  console.log(column, tile);
   var new_board = board.slice(0);
 
   var i = 0;
@@ -341,13 +358,10 @@ function generateAdders(board, column, tile) {
 
     i++;
     var row = _.random(0, window.BOARD_HEIGHT-1);
-    console.log(row);
 
-    if ( new_board[row][column] === tile) {
-      new_board[row][column] = "apple";
-      console.log("adding one!");
-      console.log(row, column);
-      return new_board;
+    var things = new_board[row][column];
+    if ( _.contains(things, tile) ) {
+      return addToPosition(new_board, { x: column, y: row }, "apple");
     }
 
   }
@@ -359,20 +373,28 @@ function generatePath(board, position, tile) {
   if ( ! position ) {
     position = { x: 0, y: parseInt(BOARD_HEIGHT / 2, 10) };
   }
-  new_board = changeBoardAtPosition(new_board, position, tile);
+  new_board = addToPosition(new_board, position, tile);
 
   while ( position.x < boardWidth() - 1 ) {
     var next_dir = randomDirection(position);
     position = positionFromDirection(position, next_dir);
-    new_board = changeBoardAtPosition(new_board, position, tile);
+    new_board = addToPosition(new_board, position, tile);
   }
 
   return new_board;
 }
 
-function changeBoardAtPosition(board, position, new_tile) {
+function removeFromPosition(board, position, thing) {
   var new_board = board.slice(0);
-  new_board[position.y][position.x] = new_tile;
+  new_board[position.y][position.x] = _.without(new_board[position.y][position.x], thing);
+  return new_board;
+}
+
+function addToPosition(board, position, thing) {
+  var new_board = board.slice(0);
+  var things = new_board[position.y][position.x];
+  things.push(thing);
+  new_board[position.y][position.x] = _.uniq(things);
   return new_board;
 }
 
@@ -380,16 +402,16 @@ function positionFromDirection(position, direction) {
   if ( direction === 0 && position.y !== 0 ) { return { x: position.x, y: position.y - 1 }; } // Up
   if ( direction === 1 ) { return { x: position.x + 1, y: position.y }; } // Right
   if ( direction === 2 && position.y !== window.BOARD_HEIGHT - 1 ) { return { x: position.x, y: position.y + 1 }; } // Down
-  if ( direction === 3 && position.x >= 0 ) { return { x: position.x - 1, y: position.y }; } // Left
+  if ( direction === 3 && position.x > 0 ) { return { x: position.x - 1, y: position.y }; } // Left
   return position; // Don't move
 }
 
 function checkPosition(board, position) {
   var tile = board[position.y][position.x];
 
-  if ( tile === 0 ) { return "collision"; }
-  if ( tile === 'apple' ) { return "apple"; }
-  if ( position.x >= boardWidth() ) { return "win"; }
+  if ( ! _.contains(board, "path1") && ! _.contains(board, "path2") ) { return "collision"; }
+  if ( _.contains(board, "apple") ) { return "apple"; }
+  //if ( position.x >= boardWidth() ) { return "win"; }
   return true;
 }
 

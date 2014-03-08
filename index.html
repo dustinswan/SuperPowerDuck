@@ -26,7 +26,8 @@
     <div class="board-inner-container">
 
       <div ng-repeat="row in board" class="row">
-        <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="{water: (cell === 1 || cell === 'path1' || cell === 'path2'), blocked: cell === 0, 'duck fa-rub': cell === 'duck', preboard: cell === 4, 'apple fa-apple': cell === 'apple', 'moving-up': next_next_direction === 0, 'moving-right': next_next_direction === 1, 'moving-down': next_next_direction === 2, 'moving-left': next_next_direction === 3 }">
+        <!--<div ng-repeat="cell in row track by $index" class="tile fa" ng-class="{water: (cell === 1 || cell === 'path1' || cell === 'path2'), blocked: cell === 0, 'duck fa-rub': cell === 'duck', preboard: cell === 4, 'apple fa-apple': cell === 'apple', 'moving-up': next_next_direction === 0, 'moving-right': next_next_direction === 1, 'moving-down': next_next_direction === 2, 'moving-left': next_next_direction === 3 }">-->
+        <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="tileClasses(cell)">
         </div>
       </div>
       <div style="clear: both;"></div>

@@ -36,7 +36,7 @@ body {
 .tile.blocked { background: black; }
 .tile.water { background-image: url('../img/water.png'); }
 .tile.preboard { background-image: url('../img/grass.png'); }
-.tile.apple { background-image: url('../img/water.png'); color: red; }
+.tile.apple { color: red; }
 .tile.duck:after {
   content: "D";
   background: yellow;
