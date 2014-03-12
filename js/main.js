@@ -79,6 +79,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
   // Make a board
   $scope.newBoard = function () {
+    window.last_apple_column = 0;
     $scope.board = [];
     $scope.generateBoard();
 
@@ -95,7 +96,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   $scope.newBoard();
 
   $scope.restart = function () {
-    $scope.init();
+    $scope.newBoard();
   };
 
   $scope.moveDuck = function () {
