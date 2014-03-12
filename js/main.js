@@ -41,6 +41,8 @@ function board(func) {
 
 DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
+  drawController();
+
   $scope.init = function () {
     $scope.duck_position = DUCK_START_POSITION;
     $scope.directions = [];
@@ -51,16 +53,25 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     $scope.scroll_left = 0;
 
     // Draw duck
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 'duck');
+    $scope.board = addToPosition($scope.board, $scope.duck_position, 'duck');
 
-    $timeout($scope.pan_board, 2000);
+    //$timeout($scope.pan_board, 0);
+    //$scope.pan_board();
+    var countdown_interval = $interval(function () {
+      $scope.pre_countdown--;
+      if ( $scope.pre_countdown === 0 ) {
+        $interval.cancel(countdown_interval);
+        // Let them input!
+        $scope.inputDirections();
+      }
+    }, 1000);
   };
 
   $scope.generateBoard = function () {
     for ( var i = 0; i < window.BOARD_HEIGHT; i++ ) {
       var arr = [];
       for ( var j = 0; j < window.BOARD_STARTING_WIDTH; j++ ) {
-        arr.push(0);
+        arr.push([]);
       }
       $scope.board.push(arr);
     }
@@ -87,59 +98,37 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
   };
 
-  $scope.pan_board = function (start_left) {
-    var max = boardWidth() * TILE_WIDTH;
-    var outer = document.querySelector(".board-outer-container");
-    start_left = start_left || 0;
-    var left = start_left;
-
-    outer.scrollLeft = start_left;
-
-    $scope.pre_countdown = 4;
-    var countdown_interval = $interval(function () {
-      $scope.pre_countdown--;
-      if ( $scope.pre_countdown === 0 ) {
-        $interval.cancel(countdown_interval);
-        // Let them input!
-        $scope.inputDirections();
-      }
-    }, 1000);
-
-  };
-
   $scope.newBoard();
 
   $scope.restart = function () {
     $scope.init();
   };
 
-
   $scope.shiftViewport = function () {
-    var outer = document.querySelector(".board-outer-container");
+    var inner = document.querySelector(".board-inner-container");
     var left = Math.max( ( $scope.duck_position.x - 3 ) * TILE_WIDTH, 0);
-    outer.scrollLeft = left;
+    inner.style.marginLeft = -1 * left + "px";
   };
 
   // TODO Consolidate these
   $scope.placeDuck = function (position) {
 
     // Remove old duck
-    var old_tile = $scope.board[$scope.duck_position.x][$scope.duck_position.y];
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, old_tile);
+    $scope.board = removeFromPosition($scope.board, $scope.duck_position, 'duck');
 
     $scope.duck_position = position;
 
     // Shift the viewport
     $scope.shiftViewport();
 
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 'duck');
+    $scope.board = addToPosition($scope.board, $scope.duck_position, 'duck');
   };
 
   $scope.moveDuck = function () {
 
     // Remove old duck
     //var old_tile = $scope.board[$scope.duck_position.x][$scope.duck_position.y];
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 1);
+    $scope.board = removeFromPosition($scope.board, $scope.duck_position, 'duck');
 
     // Find new position based off their input
     var next_direction = $scope.directions[$scope.move_count];
@@ -156,7 +145,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     var status = checkPosition($scope.board, $scope.duck_position);
 
     // Update board
-    $scope.board = changeBoardAtPosition($scope.board, $scope.duck_position, 'duck');
+    $scope.board = addToPosition($scope.board, $scope.duck_position, 'duck');
 
     // Add CSS class to animate duck
     //$scope.next_next_direction = $scope.directions[$scope.move_count + 1];
@@ -168,6 +157,9 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
       alert("You've won!");
     } else if ( status === "apple" ) {
 
+      // Remove apple from board
+      $scope.board = removeFromPosition($scope.board, $scope.duck_position, 'apple');
+
       // TODO ABSTRACT DIS
       $scope.directions = [];
       $scope.move_count = 0;
@@ -175,9 +167,16 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
       // Add more board
       $scope.addMoreBoard();
 
-      // pan to end, then pan back to duck
-      var left = ($scope.duck_position.x - 3) * TILE_WIDTH;
-      $scope.pan_board(left); // This starts the input thing
+      // TODO ABSTRACT THIS
+      $scope.pre_countdown = 4;
+      var countdown_interval = $interval(function () {
+        $scope.pre_countdown--;
+        if ( $scope.pre_countdown === 0 ) {
+          $interval.cancel(countdown_interval);
+          // Let them input!
+          $scope.inputDirections();
+        }
+      }, 1000);
 
     } else {
 
@@ -199,9 +198,26 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     });
   };
 
-  // For on-screen buttons
-  $scope.input = function (dir) {
-    $scope.directions.push({ up: 0, right: 1, down: 2, left: 3 }[dir]);
+  var height = window.innerHeight;
+  var width = 475;
+
+  var down_triangle_coords = [ { x: 0, y: height }, { x: width, y: height }, { x: width / 2, y: height / 2 } ];
+  var up_triangle_coords = [ { x: 0, y: 0 }, { x: width, y: 0 }, { x: width / 2, y: height / 2 } ];
+  var left_triangle_coords = [ { x: 0, y: 0 }, { x: 0, y: height }, { x: width / 2, y: height / 2 } ];
+  var right_triangle_coords = [ { x: width, y: 0 }, { x: width, y: height }, { x: width / 2, y: height / 2 } ];
+
+  $scope.tap = function (event) {
+    if ( ! $scope.countdown ) { return; }
+    if ( isInTriangle({x: event.offsetX, y: event.offsetY }, down_triangle_coords[0], down_triangle_coords[1], down_triangle_coords[2]) ) {
+      $scope.directions.push(2);
+    } else if ( isInTriangle({x: event.offsetX, y: event.offsetY }, up_triangle_coords[0], up_triangle_coords[1], up_triangle_coords[2]) ) {
+      $scope.directions.push(0);
+    } else if ( isInTriangle({x: event.offsetX, y: event.offsetY }, left_triangle_coords[0], left_triangle_coords[1], left_triangle_coords[2]) ) {
+      $scope.directions.push(3);
+    } else if ( isInTriangle({x: event.offsetX, y: event.offsetY }, right_triangle_coords[0], right_triangle_coords[1], right_triangle_coords[2]) ) {
+      $scope.directions.push(1);
+    }
+
   };
 
   $scope.inputDirections = function () {
@@ -253,10 +269,12 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     var column = boardWidth() - 1;
 
     var highest, lowest;
+    var things;
 
     // find path1
     for (i = 0; i < window.BOARD_HEIGHT; i++ ) {
-      if ( $scope.board[i][column] === 'path1' || $scope.board[i][colimn] === 'path2' ) {
+      things = $scope.board[i][column];
+      if ( _.contains(things, 'path1') || _.contains(things, 'path2') ) {
         highest = i;
         break;
       }
@@ -264,7 +282,8 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
     // find path2
     for (i = window.BOARD_HEIGHT-1; i >= 0; i--) {
-      if ( $scope.board[i][column] === 'path2' || $scope.board[i][column] === 'path1' ) {
+      things = $scope.board[i][column];
+      if ( _.contains(things, 'path1') || _.contains(things, 'path2') ) {
         lowest = i;
         break;
       }
@@ -291,13 +310,30 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   $scope.increaseBoardWidth = function (count) {
     for ( var i = 0; i < window.BOARD_HEIGHT; i++ ) {
       for ( var j = 0; j < count; j++ ) {
-        $scope.board[i].push(0);
+        $scope.board[i].push([]);
       }
     }
 
     var new_width_pixels = boardWidth() * TILE_WIDTH;
     var inner = document.querySelector(".board-inner-container");
     inner.style.width = new_width_pixels + "px";
+  };
+
+  $scope.tileClasses = function (things) {
+    var classes = "";
+    if ( _.contains(things, "duck") ) {
+      classes += "duck ";
+    }
+    if ( _.contains(things, "path1") || _.contains(things, "path2") ) {
+      classes += "water ";
+    }
+    if ( _.contains(things, "apple") ) {
+      classes += "apple ";
+    }
+    if ( _.isEmpty(things) ) {
+      classes += "blocked";
+    }
+    return classes;
   };
 
 });
@@ -313,7 +349,7 @@ function randomDirection(position) {
   var move = { 0: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: x, }[_.random(0, 10)];
 
   // TODO BROKEN
-  if ( window.move ) {
+  if ( window.last_move ) {
     if (   move === 0 && last_move === 2 ||
         move === 2 && last_move === 0 ||
         move === 1 && last_move === 3 ||
@@ -327,8 +363,7 @@ function randomDirection(position) {
 }
 
 function generateAdders(board, column, tile) {
-  console.log("generateAdders");
-  console.log(column, tile);
+
   var new_board = board.slice(0);
 
   var i = 0;
@@ -341,13 +376,10 @@ function generateAdders(board, column, tile) {
 
     i++;
     var row = _.random(0, window.BOARD_HEIGHT-1);
-    console.log(row);
 
-    if ( new_board[row][column] === tile) {
-      new_board[row][column] = "apple";
-      console.log("adding one!");
-      console.log(row, column);
-      return new_board;
+    var things = new_board[row][column];
+    if ( _.contains(things, tile) ) {
+      return addToPosition(new_board, { x: column, y: row }, "apple");
     }
 
   }
@@ -359,20 +391,28 @@ function generatePath(board, position, tile) {
   if ( ! position ) {
     position = { x: 0, y: parseInt(BOARD_HEIGHT / 2, 10) };
   }
-  new_board = changeBoardAtPosition(new_board, position, tile);
+  new_board = addToPosition(new_board, position, tile);
 
   while ( position.x < boardWidth() - 1 ) {
     var next_dir = randomDirection(position);
     position = positionFromDirection(position, next_dir);
-    new_board = changeBoardAtPosition(new_board, position, tile);
+    new_board = addToPosition(new_board, position, tile);
   }
 
   return new_board;
 }
 
-function changeBoardAtPosition(board, position, new_tile) {
+function removeFromPosition(board, position, thing) {
   var new_board = board.slice(0);
-  new_board[position.y][position.x] = new_tile;
+  new_board[position.y][position.x] = _.without(new_board[position.y][position.x], thing);
+  return new_board;
+}
+
+function addToPosition(board, position, thing) {
+  var new_board = board.slice(0);
+  var things = new_board[position.y][position.x];
+  things.push(thing);
+  new_board[position.y][position.x] = _.uniq(things);
   return new_board;
 }
 
@@ -380,16 +420,15 @@ function positionFromDirection(position, direction) {
   if ( direction === 0 && position.y !== 0 ) { return { x: position.x, y: position.y - 1 }; } // Up
   if ( direction === 1 ) { return { x: position.x + 1, y: position.y }; } // Right
   if ( direction === 2 && position.y !== window.BOARD_HEIGHT - 1 ) { return { x: position.x, y: position.y + 1 }; } // Down
-  if ( direction === 3 && position.x >= 0 ) { return { x: position.x - 1, y: position.y }; } // Left
+  if ( direction === 3 && position.x > 0 ) { return { x: position.x - 1, y: position.y }; } // Left
   return position; // Don't move
 }
 
 function checkPosition(board, position) {
-  var tile = board[position.y][position.x];
+  var things = board[position.y][position.x];
 
-  if ( tile === 0 ) { return "collision"; }
-  if ( tile === 'apple' ) { return "apple"; }
-  if ( position.x >= boardWidth() ) { return "win"; }
+  if ( ! _.contains(things, "path1") && ! _.contains(things, "path2") ) { return "collision"; }
+  if ( _.contains(things, "apple") ) { return "apple"; }
   return true;
 }
 
@@ -403,4 +442,29 @@ function isIOS() {
 
 function boardWidth() {
   return board()[0].length;
+}
+
+function drawController() {
+   var canvas = document.getElementById('controller_canvas');
+   var context = canvas.getContext('2d');
+
+   context.beginPath();
+   context.strokeStyle = "#FFFFFF";
+   context.lineWidth = 1;
+
+   context.moveTo(0.2, 0.2);
+   context.lineTo(canvas.width, canvas.height);
+
+   context.moveTo(canvas.width, 0);
+   context.lineTo(0, canvas.height);
+
+   context.stroke();
+}
+
+function isInTriangle(p, p1, p2, p3) {
+  var alpha = ((p2.y - p3.y)*(p.x - p3.x) + (p3.x - p2.x)*(p.y - p3.y)) / ((p2.y - p3.y)*(p1.x - p3.x) + (p3.x - p2.x)*(p1.y - p3.y));
+  var beta = ((p3.y - p1.y)*(p.x - p3.x) + (p1.x - p3.x)*(p.y - p3.y)) / ((p2.y - p3.y)*(p1.x - p3.x) + (p3.x - p2.x)*(p1.y - p3.y));
+  var gamma = 1 - alpha - beta;
+
+  return alpha > 0 && beta > 0 && gamma > 0;
 }
