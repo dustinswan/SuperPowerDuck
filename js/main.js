@@ -7,28 +7,7 @@ BOARD_HEIGHT = parseInt((window.innerHeight - STATUS_BAR_HEIGHT) / TILE_HEIGHT, 
 BOARD_STARTING_WIDTH = 38;
 DUCK_START_POSITION = { x: 0, y: parseInt(BOARD_HEIGHT / 2, 10) };
 
-var DuckApp = angular.module('DuckApp', []);
-
-DuckApp.directive('ngTap', function() {
-  return function(scope, element, attrs) {
-    var tapping;
-    tapping = false;
-    element.bind('touchstart', function(e) {
-      element.addClass('active');
-      tapping = true;
-    });
-    element.bind('touchmove', function(e) {
-      element.removeClass('active');
-      tapping = false;
-    });
-    element.bind('touchend', function(e) {
-      element.removeClass('active');
-      if (tapping) {
-        scope.$apply(attrs.ngTap, element);
-      }
-    });
-  };
-});
+var DuckApp = angular.module('DuckApp', ['ngTouch']);
 
 function board(func) {
   var el = document.getElementById("container");
@@ -43,6 +22,12 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
   drawController();
 
+  $scope.shiftViewport = function () {
+    var inner = document.querySelector(".board-inner-container");
+    var left = Math.max( ( $scope.duck_position.x - 3 ) * TILE_WIDTH, 0);
+    inner.style.marginLeft = -1 * left + "px";
+  };
+
   $scope.init = function () {
     $scope.duck_position = DUCK_START_POSITION;
     $scope.directions = [];
@@ -50,13 +35,12 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     $scope.pre_countdown = 4;
     $scope.alive = true;
 
-    $scope.scroll_left = 0;
+    $scope.shiftViewport();
 
     // Draw duck
     $scope.board = addToPosition($scope.board, $scope.duck_position, 'duck');
 
-    //$timeout($scope.pan_board, 0);
-    //$scope.pan_board();
+    // ABSRTACT DIS TODO
     var countdown_interval = $interval(function () {
       $scope.pre_countdown--;
       if ( $scope.pre_countdown === 0 ) {
@@ -102,12 +86,6 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
   $scope.restart = function () {
     $scope.init();
-  };
-
-  $scope.shiftViewport = function () {
-    var inner = document.querySelector(".board-inner-container");
-    var left = Math.max( ( $scope.duck_position.x - 3 ) * TILE_WIDTH, 0);
-    inner.style.marginLeft = -1 * left + "px";
   };
 
   // TODO Consolidate these
@@ -207,14 +185,20 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   var right_triangle_coords = [ { x: width, y: 0 }, { x: width, y: height }, { x: width / 2, y: height / 2 } ];
 
   $scope.tap = function (event) {
+    //console.log(event);
+    var x = event.offsetX || event.changedTouches[0].clientX;
+    var y = event.offsetY || event.changedTouches[0].clientY;
+
+    console.log(x, y);
+
     if ( ! $scope.countdown ) { return; }
-    if ( isInTriangle({x: event.offsetX, y: event.offsetY }, down_triangle_coords[0], down_triangle_coords[1], down_triangle_coords[2]) ) {
+    if ( isInTriangle({x: x, y: y }, down_triangle_coords[0], down_triangle_coords[1], down_triangle_coords[2]) ) {
       $scope.directions.push(2);
-    } else if ( isInTriangle({x: event.offsetX, y: event.offsetY }, up_triangle_coords[0], up_triangle_coords[1], up_triangle_coords[2]) ) {
+    } else if ( isInTriangle({x: x, y: y }, up_triangle_coords[0], up_triangle_coords[1], up_triangle_coords[2]) ) {
       $scope.directions.push(0);
-    } else if ( isInTriangle({x: event.offsetX, y: event.offsetY }, left_triangle_coords[0], left_triangle_coords[1], left_triangle_coords[2]) ) {
+    } else if ( isInTriangle({x: x, y: y }, left_triangle_coords[0], left_triangle_coords[1], left_triangle_coords[2]) ) {
       $scope.directions.push(3);
-    } else if ( isInTriangle({x: event.offsetX, y: event.offsetY }, right_triangle_coords[0], right_triangle_coords[1], right_triangle_coords[2]) ) {
+    } else if ( isInTriangle({x: x, y: y }, right_triangle_coords[0], right_triangle_coords[1], right_triangle_coords[2]) ) {
       $scope.directions.push(1);
     }
 
