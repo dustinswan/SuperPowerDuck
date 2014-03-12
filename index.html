@@ -9,7 +9,6 @@
     <script src="js/underscore-min.js"></script>
     <script src="js/angular.min.js"></script>
     <script src="js/main.js"></script>
-    <script src="http://localhost:8080/target/target-script-min.js#spd"></script>
 
     <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8">
     <link href="css/font-awesome.css" rel="stylesheet">
@@ -18,36 +17,36 @@
 
 <div id="container" ng-controller="BoardCtrl">
 
-  <div class='directions-container'>
-    <i ng-repeat="d in directions track by $index" class="arrow fa" ng-class="{'fa-arrow-up': d == 0, 'fa-arrow-right': d == 1, 'fa-arrow-down': d == 2, 'fa-arrow-left': d == 3, current: $index+1 == move_count}"></i>
-  </div>
-
   <div class="board-outer-container">
+
     <div class="board-inner-container">
 
       <div ng-repeat="row in board" class="row">
-        <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="tileClasses(cell)">
-        </div>
+        <div ng-repeat="cell in row track by $index" class="tile fa" ng-class="tileClasses(cell)"></div>
       </div>
+
       <div style="clear: both;"></div>
+
     </div>
+
+    <div ng-show="countdown" class="overlay big-notification countdown">{{ countdown }}</div>
+    <div ng-show="pre_countdown" class="overlay big-notification countdown">{{ pre_countdown }}</div>
+
+    <div class='overlay'>
+      <i ng-repeat="d in directions track by $index" class="arrow fa" ng-class="{'fa-arrow-up': d == 0, 'fa-arrow-right': d == 1, 'fa-arrow-down': d == 2, 'fa-arrow-left': d == 3, current: $index+1 == move_count}"></i>
+    </div>
+
+    <div class='overlay game-over' ng-hide="alive">
+      <h3>TRY HARDER</h3>
+      <p>Your score: {{ duck_position.x }}</p>
+      <button ng-click="newBoard()">Try Again</button>
+      <button ng-click="tweetScore()">TWEET SCORE</button>
+    </div>
+
+    <canvas ng-show="countdown" ng-click="tap($event)" id="controller_canvas"></canvas>
   </div>
 
-  <div ng-show="countdown" class="big-notification countdown">{{ countdown }}</div>
 
-  <div class='dialog' ng-hide="alive">
-    <h3>TRY HARDER</h3>
-    <p>Your score: {{ duck_position.x }}</p>
-    <button ng-click="newBoard()">Try Again</button>
-    <button ng-click="tweetScore()">TWEET SCORE</button>
-  </div>
-
-  <div class='controller' ng-show="countdown || pre_countdown">
-    <div ng-tap="input('up')" class='controller-button up-button fa' ng-class="{ 'fa-arrow-up': pre_countdown < 1 }">{{ pre_countdown >= 1 ? 1 : "" }}</div>
-    <div ng-tap="input('right')" class='controller-button right-button fa' ng-class="{ 'fa-arrow-right': pre_countdown < 2 }">{{ pre_countdown >= 2 ? 2 : "" }}</div>
-    <div ng-tap="input('down')" class='controller-button down-button fa' ng-class="{ 'fa-arrow-down': pre_countdown < 3 }">{{ pre_countdown >= 3 ? 3 : "" }}</div>
-    <div ng-tap="input('left')" class='controller-button left-button fa' ng-class="{ 'fa-arrow-left': pre_countdown < 4 }">{{ pre_countdown >= 4 ? 4 : "" }}</div>
-  </div>
 
 </div>
 
