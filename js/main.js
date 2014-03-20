@@ -30,11 +30,22 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   };
 
   $scope.drawMoreApples = function () {
+    console.log("drawMoreApples");
     var column = (window.last_apple_column || 0) + 5;
-    while ( column < boardWidth() ) {
+    console.log("looking at column " + column + ". board width = " + boardWidth());
+    //while ( column < boardWidth() ) {
+    while ( true ) {
+      console.log("looping");
       var path = path === "path1" ? "path2" : "path1"; // Switch between paths
       $scope.board = generateAdders($scope.board, column, path);
-      column = column + _.random(4, 6);
+      var next_skip = _.random(4, 6);
+
+      if ( column + next_skip >= boardWidth() ) {
+        console.log("breaking out!");
+        break;
+      }
+      column = column + next_skip;
+
     }
 
     window.last_apple_column = column;
@@ -135,7 +146,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
       // Add more board
       $scope.addMoreBoard();
 
-      $scope.startCountdown()
+      $scope.startCountdown();
 
     } else {
 
@@ -252,7 +263,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     inner.style.width = new_width_pixels + "px";
   };
 
-  $scope.tileClasses = function (things) {
+  $scope.tileClasses = function (things) { // TODO this gets called every digest. oops
     var classes = "";
     if ( _.contains(things, "duck") ) {
       classes += "duck ";
@@ -267,6 +278,12 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
       classes += "blocked";
     }
     return classes;
+  };
+
+  $scope.tileColor = function (tile) {
+    if ( _.contains(tile, "path1") || _.contains(tile, "path2") ) {
+      return "rgb(0, 0, " + _.random(100, 255) + ")";
+    }
   };
 
 });
@@ -297,8 +314,10 @@ function randomDirection(position) {
 
 function generateAdders(board, column, tile) {
   var new_board = board.slice(0);
+  console.log("trying to add apple at column: " + column);
 
   while ( true ) {
+    console.log("generateAdders looping");
     var row = _.random(0, window.BOARD_HEIGHT-1);
 
     var things = new_board[row][column];
