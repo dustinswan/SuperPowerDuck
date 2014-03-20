@@ -40,10 +40,12 @@
     </div>
 
     <div class='overlay game-over' ng-hide="alive">
-      <h3>TRY HARDER</h3>
-      <p>Your score: {{ duck_position.x }}</p>
-      <button ng-click="newBoard()">Try Again</button>
-      <button ng-click="tweetScore()">TWEET SCORE</button>
+      <div class='final-score'>{{ duck_position.x }}</div>
+
+      <div class='buttons'>
+        <div class='try_again' ng-click="newBoard()"></div>
+        <div class='tweet_score' ng-click="tweetScore()"></div>
+      </div>
     </div>
 
     <canvas ng-show="countdown" ng-click="tap($event)" id="controller_canvas"></canvas>

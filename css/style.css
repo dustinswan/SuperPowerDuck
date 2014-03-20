@@ -12,6 +12,7 @@ body {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+
 }
 
 .board-outer-container {
@@ -41,11 +42,12 @@ body {
   position: relative;
 }
 
-.tile.blocked {
-  background-color: black;
-}
+.tile.gray0 { background-color: #040404; }
+.tile.gray1 { background-color: #1c1c1c; }
+.tile.gray2 { background-color: #121212; }
+
 .tile.apple {
-  background-image: url("../img/applex.png");
+  background-image: url("../img/apple.png");
   background-repeat: no-repeat;
   background-position: center center;
 }
@@ -53,6 +55,9 @@ body {
   background-image: url("../img/ducky.png");
   background-repeat: no-repeat;
   background-position: center center;
+}
+.tile.water {
+  background-color: transparent !important;
 }
 
 .duck.moving-up:after {
@@ -105,8 +110,35 @@ body {
 }
 
 .game-over {
-  background-color: rgba(255,255,255,0.75);
-  padding: 10px;
+  opacity: 0.75;
+  height: 250px;
+  background-color: #c6d844;
+  background-image: url('../img/harder.png');
+}
+.final-score {
+  font-size: 100px;
+  text-align: center;
+  margin: 20px 0 10px 0;
+}
+
+.buttons {
+  position: absolute;
+  bottom: 20px;
+  text-align: center;
+}
+.try_again,
+.tweet_score {
+  display: inline-block;
+  width: 155px;
+  height: 48px;
+  background-repeat: no-repeat;
+}
+.try_again {
+  margin-right: 40px;
+  background-image: url('../img/again.png');
+}
+.tweet_score {
+  background-image: url('../img/tweet.png');
 }
 
 #controller_canvas {

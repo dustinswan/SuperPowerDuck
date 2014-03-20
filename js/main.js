@@ -20,6 +20,8 @@ function board(func) {
 
 DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
+  $scope.apple_difficulty = 0;
+
   drawController();
 
   // Move the inner container around
@@ -30,18 +32,16 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   };
 
   $scope.drawMoreApples = function () {
-    console.log("drawMoreApples");
+    console.log("hi");
     var column = (window.last_apple_column || 0) + 5;
-    console.log("looking at column " + column + ". board width = " + boardWidth());
-    //while ( column < boardWidth() ) {
     while ( true ) {
-      console.log("looping");
+      console.log("bye");
       var path = path === "path1" ? "path2" : "path1"; // Switch between paths
       $scope.board = generateAdders($scope.board, column, path);
-      var next_skip = _.random(4, 6);
+      var next_skip = _.random(parseInt(4 + $scope.apple_difficulty, 10), parseInt(6 + $scope.apple_difficulty, 10));
+      console.log(next_skip);
 
       if ( column + next_skip >= boardWidth() ) {
-        console.log("breaking out!");
         break;
       }
       column = column + next_skip;
@@ -69,6 +69,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     $scope.directions = [];
     $scope.move_count = 0;
     $scope.alive = true;
+    $scope.apple_difficulty = 0;
 
     $scope.shiftViewport();
 
@@ -82,7 +83,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     for ( var i = 0; i < window.BOARD_HEIGHT; i++ ) {
       var arr = [];
       for ( var j = 0; j < window.BOARD_STARTING_WIDTH; j++ ) {
-        arr.push([]);
+        arr.push(["blocked" + _.random(0,2)]);
       }
       $scope.board.push(arr);
     }
@@ -135,6 +136,9 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     if ( status === "collision" ) {
       $scope.alive = false;
     } else if ( status === "apple" ) {
+
+      // Increase difficulty
+      $scope.apple_difficulty += 0.25;
 
       // Remove apple from board
       $scope.board = removeFromPosition($scope.board, $scope.duck_position, 'apple');
@@ -254,7 +258,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   $scope.increaseBoardWidth = function (count) {
     for ( var i = 0; i < window.BOARD_HEIGHT; i++ ) {
       for ( var j = 0; j < count; j++ ) {
-        $scope.board[i].push([]);
+        $scope.board[i].push(["blocked" + _.random(0,2)]);
       }
     }
 
@@ -265,18 +269,13 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
   $scope.tileClasses = function (things) { // TODO this gets called every digest. oops
     var classes = "";
-    if ( _.contains(things, "duck") ) {
-      classes += "duck ";
-    }
-    if ( _.contains(things, "path1") || _.contains(things, "path2") ) {
-      classes += "water ";
-    }
-    if ( _.contains(things, "apple") ) {
-      classes += "apple ";
-    }
-    if ( _.isEmpty(things) ) {
-      classes += "blocked";
-    }
+    if ( _.contains(things, "duck") ) { classes += "duck "; }
+    if ( _.contains(things, "path1") || _.contains(things, "path2") ) { classes += "water "; }
+    if ( _.contains(things, "apple") ) { classes += "apple "; }
+    if ( _.contains(things, "blocked0") ) { classes += "gray0 "; }
+    if ( _.contains(things, "blocked1") ) { classes += "gray1 "; }
+    if ( _.contains(things, "blocked2") ) { classes += "gray2 "; }
+    if ( _.isEmpty(things) ) { classes += "blocked"; }
     return classes;
   };
 
@@ -314,10 +313,8 @@ function randomDirection(position) {
 
 function generateAdders(board, column, tile) {
   var new_board = board.slice(0);
-  console.log("trying to add apple at column: " + column);
 
   while ( true ) {
-    console.log("generateAdders looping");
     var row = _.random(0, window.BOARD_HEIGHT-1);
 
     var things = new_board[row][column];
