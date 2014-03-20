@@ -155,3 +155,8 @@ body {
   color: rgba(255,255,255,0.5);
 }
 
+.high-scores {
+  background-color: #000;
+  color: #fff;
+  padding: 20px;
+}

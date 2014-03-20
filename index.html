@@ -39,13 +39,17 @@
       <i ng-repeat="d in directions track by $index" class="arrow fa" ng-class="{'fa-arrow-up': d == 0, 'fa-arrow-right': d == 1, 'fa-arrow-down': d == 2, 'fa-arrow-left': d == 3, current: $index+1 == move_count}"></i>
     </div>
 
-    <div class='overlay game-over' ng-hide="alive">
-      <div class='final-score'>{{ duck_position.x }}</div>
+    <div class='overlay game-over' ng-hide="alive || show_high_scores">
+      <div class='final-score'>{{ final_score }}</div>
 
       <div class='buttons'>
         <div class='try_again' ng-click="newBoard()"></div>
         <div class='tweet_score' ng-click="tweetScore()"></div>
       </div>
+    </div>
+
+    <div class='overlay high-scores' ng-show="show_high_scores" ng-click="show_high_scores = false">
+      <div ng-repeat="score in high_scores">{{ score.name }} - {{ score.score }}</div>
     </div>
 
     <canvas ng-show="countdown" ng-click="tap($event)" id="controller_canvas"></canvas>

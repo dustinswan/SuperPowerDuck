@@ -1,6 +1,6 @@
 STATUS_BAR_HEIGHT = 20;
 INPUT_TIMEOUT = 7; // in seconds
-DUCK_SPEED = 0.5; // in seconds
+DUCK_SPEED = 0.4; // in seconds
 TILE_WIDTH = 25; // TODO don't hardcode
 TILE_HEIGHT = 25; // TODO don't hardcode
 BOARD_HEIGHT = parseInt((window.innerHeight - STATUS_BAR_HEIGHT) / TILE_HEIGHT, 10);
@@ -21,6 +21,7 @@ function board(func) {
 DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
   $scope.apple_difficulty = 0;
+  $scope.num_moves = 0;
 
   drawController();
 
@@ -32,14 +33,11 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   };
 
   $scope.drawMoreApples = function () {
-    console.log("hi");
     var column = (window.last_apple_column || 0) + 5;
     while ( true ) {
-      console.log("bye");
       var path = path === "path1" ? "path2" : "path1"; // Switch between paths
       $scope.board = generateAdders($scope.board, column, path);
-      var next_skip = _.random(parseInt(4 + $scope.apple_difficulty, 10), parseInt(6 + $scope.apple_difficulty, 10));
-      console.log(next_skip);
+      var next_skip = _.random(parseInt(4 + $scope.apple_difficulty / 4, 10), parseInt(6 + $scope.apple_difficulty / 4, 10));
 
       if ( column + next_skip >= boardWidth() ) {
         break;
@@ -52,7 +50,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   };
 
   $scope.startCountdown = function () {
-    $scope.pre_countdown = 4;
+    $scope.pre_countdown = 3;
     var countdown_interval = $interval(function () {
       $scope.pre_countdown--;
       if ( $scope.pre_countdown === 0 ) {
@@ -70,6 +68,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     $scope.move_count = 0;
     $scope.alive = true;
     $scope.apple_difficulty = 0;
+    $scope.num_moves = 0;
 
     $scope.shiftViewport();
 
@@ -113,6 +112,9 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
   $scope.moveDuck = function () {
 
+    // Increase move counetr
+    $scope.num_moves++;
+
     // Remove old duck
     $scope.board = removeFromPosition($scope.board, $scope.duck_position, 'duck');
 
@@ -135,10 +137,12 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
 
     if ( status === "collision" ) {
       $scope.alive = false;
+      $scope.calculateScore();
+
     } else if ( status === "apple" ) {
 
       // Increase difficulty
-      $scope.apple_difficulty += 0.25;
+      $scope.apple_difficulty++;
 
       // Remove apple from board
       $scope.board = removeFromPosition($scope.board, $scope.duck_position, 'apple');
@@ -157,6 +161,7 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
       // if we are at the end, stop trying to move duck
       if ( $scope.move_count === $scope.directions.length ) {
         $scope.alive = false;
+        $scope.calculateScore();
       } else { // Otherwise, move the duck again
         $scope.duck_mover = $timeout($scope.moveDuck, DUCK_SPEED * 1000);
         $scope.move_count++;
@@ -219,7 +224,22 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   };
 
   $scope.tweetScore = function () {
-    alert("OK TWEETED THX");
+    $scope.show_high_scores = true;
+    $scope.high_scores = JSON.parse(localStorage.scores);
+  };
+
+  $scope.calculateScore = function () {
+    var name = prompt("Enter Your Name", localStorage.previousName);
+    localStorage.previousName = name;
+    var scores = JSON.parse(localStorage.scores || "[]");
+
+    $scope.final_score = parseInt(($scope.num_moves / (1 + $scope.apple_difficulty)) * $scope.duck_position.x, 10);
+
+    scores.push({ name: name, score: $scope.final_score });
+
+    // scores maxes out at 10
+    scores = _.first(_.sortBy(scores, function (item) { return -1 * item.score; }), 10);
+    localStorage.scores = JSON.stringify(scores);
   };
 
   $scope.addMoreBoard = function () {
