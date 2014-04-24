@@ -20,6 +20,20 @@
 
 <div id="container" ng-controller="BoardCtrl">
 
+  <div class='score-board'>
+    <table style="width: 100%;">
+      <thead>
+        <tr><th>User</th><th>Score</th></tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat='score in scores'>
+          <td> {{ score.user }}</td>
+          <td>{{ score.score }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <div class="board-outer-container">
 
     <div class="board-inner-container">
@@ -33,7 +47,7 @@
     </div>
 
     <div ng-show="countdown" class="overlay big-notification countdown">{{ countdown }}</div>
-    <div ng-show="pre_countdown" class="overlay big-notification countdown">{{ pre_countdown }}</div>
+    <div ng-show="pre_countdown" class="overlay big-notification countdown">{{ { 3: "Ready", 2: "Set", 1: "Go" }[pre_countdown] }}</div>
 
     <div class='overlay'>
       <i ng-repeat="d in directions track by $index" class="arrow fa" ng-class="{'fa-arrow-up': d == 0, 'fa-arrow-right': d == 1, 'fa-arrow-down': d == 2, 'fa-arrow-left': d == 3, current: $index+1 == move_count}"></i>
@@ -52,7 +66,7 @@
       <div ng-repeat="score in high_scores">{{ score.name }} - {{ score.score }}</div>
     </div>
 
-    <canvas ng-show="countdown" ng-click="tap($event)" id="controller_canvas"></canvas>
+    <!--<canvas ng-show="countdown" ng-click="tap($event)" id="controller_canvas"></canvas>-->
   </div>
 
 

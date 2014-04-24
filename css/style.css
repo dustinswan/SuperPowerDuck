@@ -6,7 +6,7 @@ body {
   background: black;
   padding-top: 20px;
   position: relative;
-  background-color: #fff;
+  background-color: #111;
 
   /* Don't allow highlighting in browsers */
   -webkit-user-select: none;
@@ -24,6 +24,7 @@ body {
   overflow: hidden;
 
   margin: 0 auto;
+  border: 1px solid #444;
 }
 
 .board-inner-container {
@@ -159,4 +160,14 @@ body {
   background-color: #000;
   color: #fff;
   padding: 20px;
+}
+
+/* Score Board */
+.score-board {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  border: 1px solid #333;
+  color: #fff;
+  width: 300px;
 }

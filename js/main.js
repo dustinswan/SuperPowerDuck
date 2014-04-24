@@ -3,7 +3,8 @@ INPUT_TIMEOUT = 7; // in seconds
 DUCK_SPEED = 0.4; // in seconds
 TILE_WIDTH = 25; // TODO don't hardcode
 TILE_HEIGHT = 25; // TODO don't hardcode
-BOARD_HEIGHT = parseInt((window.innerHeight - STATUS_BAR_HEIGHT) / TILE_HEIGHT, 10);
+//BOARD_HEIGHT = parseInt((window.innerHeight - STATUS_BAR_HEIGHT) / TILE_HEIGHT, 10);
+BOARD_HEIGHT = 28;
 BOARD_STARTING_WIDTH = 38;
 DUCK_START_POSITION = { x: 0, y: parseInt(BOARD_HEIGHT / 2, 10) };
 
@@ -18,7 +19,7 @@ function board(func) {
   return angular.element(el).scope().board;
 }
 
-DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
+DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval, $http) {
 
   $scope.apple_difficulty = 0;
   $scope.num_moves = 0;
@@ -33,11 +34,11 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
   };
 
   $scope.drawMoreApples = function () {
-    var column = (window.last_apple_column || 0) + 5;
+    var column = (window.last_apple_column || 5);// + 5;
     while ( true ) {
       var path = path === "path1" ? "path2" : "path1"; // Switch between paths
       $scope.board = generateAdders($scope.board, column, path);
-      var next_skip = _.random(parseInt(4 + $scope.apple_difficulty / 4, 10), parseInt(6 + $scope.apple_difficulty / 4, 10));
+      var next_skip = _.random(parseInt(4 + $scope.apple_difficulty / 3, 10), parseInt(6 + $scope.apple_difficulty / 3, 10));
 
       if ( column + next_skip >= boardWidth() ) {
         break;
@@ -223,23 +224,10 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
     }, 1000);
   };
 
-  $scope.tweetScore = function () {
-    $scope.show_high_scores = true;
-    $scope.high_scores = JSON.parse(localStorage.scores);
-  };
-
   $scope.calculateScore = function () {
-    var name = prompt("Enter Your Name", localStorage.previousName);
-    localStorage.previousName = name;
-    var scores = JSON.parse(localStorage.scores || "[]");
-
+    var name = prompt("Enter Your Name", localStorage.previousName || "Duckman");
     $scope.final_score = parseInt(($scope.num_moves / (1 + $scope.apple_difficulty)) * $scope.duck_position.x, 10);
-
-    scores.push({ name: name, score: $scope.final_score });
-
-    // scores maxes out at 10
-    scores = _.first(_.sortBy(scores, function (item) { return -1 * item.score; }), 10);
-    localStorage.scores = JSON.stringify(scores);
+    $scope.submitScore(name, $scope.final_score);
   };
 
   $scope.addMoreBoard = function () {
@@ -266,7 +254,10 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
       }
     }
 
-    $scope.increaseBoardWidth(8);
+    var distance_until_end = boardWidth() - $scope.duck_position.x;
+    var distance_to_add = 50 - distance_until_end;
+
+    $scope.increaseBoardWidth(distance_to_add);
 
     $scope.board = generatePath($scope.board, { x: column, y: lowest }, 'path1');
     $scope.board = generatePath($scope.board, { x: column, y: highest }, 'path2');
@@ -304,6 +295,26 @@ DuckApp.controller('BoardCtrl', function($scope, $timeout, $interval) {
       return "rgb(0, 0, " + _.random(100, 255) + ")";
     }
   };
+
+  $scope.getScores = function () {
+    $http({method: 'GET', url: 'http://dustinswan.org:3000/get_scores'}).
+      success(function(data, status, headers, config) {
+        $scope.scores = data;
+      }).error(function(data, status, headers, config) {
+        alert("Error loading scoreboard");
+      })
+  };
+
+  $scope.submitScore = function (name, score) {
+    $http({ method: "GET", url: 'http://dustinswan.org:3000/add_score?score=' + score + '&user=' + name }).
+      success(function(data, status, headers, config) {
+        $scope.getScores();
+      }).error(function(data, status, headers, config) {
+        alert("Error adding score");
+      })
+  };
+
+  $scope.getScores();
 
 });
 
@@ -405,6 +416,7 @@ function boardWidth() {
 }
 
 function drawController() {
+  return;
    var canvas = document.getElementById('controller_canvas');
    var context = canvas.getContext('2d');
 
